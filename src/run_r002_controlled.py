@@ -7,7 +7,7 @@ or max_per_img, then every requested NMS is applied offline to those identical
 candidate identifiers.
 """
 from __future__ import annotations
-import argparse, gzip, json, math, shutil, sys, xml.etree.ElementTree as ET
+import argparse, gzip, json, math, shutil, xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
 
@@ -21,10 +21,6 @@ from scipy.optimize import linear_sum_assignment, milp, Bounds, LinearConstraint
 from scipy.sparse import lil_matrix
 from shapely.geometry import Polygon
 
-# The valid archived ORCNN checkpoint was produced with a NumPy version that
-# serialized this pre-2.0 module path.  Map it before torch unpickles weights;
-# this affects serialization compatibility only, not model arithmetic.
-sys.modules.setdefault('numpy._core', np.core)
 
 
 def poly(box):
@@ -178,7 +174,19 @@ def main():
     # Clear pass for matching covariates.
     models={}
     for name in ('orcnn','retinanet'):
-        models[name]=init_detector(cfg[name]['config'],cfg[name]['checkpoint'],device='cuda:0')
+        try:
+            models[name]=init_detector(cfg[name]['config'],cfg[name]['checkpoint'],device='cuda:0')
+        except Exception as error:
+            # Observer compatibility is a scientific qualification gate.  A
+            # structured, reproducible inconclusive outcome is preferable to
+            # substituting a different-training-split weight.
+            reason=f'{type(error).__name__}: {error}'
+            with gzip.open(out/'raw_candidates.json.gz','wt') as f: json.dump({'status':'not_generated','observer':name,'reason':reason},f)
+            result={'regression_tests':tests,'observer_provenance':{k:cfg[k] for k in ('orcnn','retinanet')},
+                    'sample_flow':{'adjacent_groups':len(groups),'adjacent_images':len(adjacent_images),'isolated_after_exclusion':len(isolated)},
+                    'conclusion':'inconclusive','inconclusive_reason':'observer compatibility gate failed for '+name+': '+reason}
+            (out/'r002_result.json').write_text(json.dumps(result,indent=2)+'\n')
+            print(json.dumps({'tests':tests,'conclusion':'inconclusive','reason':result['inconclusive_reason']},indent=2)); return
         tc=models[name].test_cfg.rcnn if 'rcnn' in models[name].test_cfg else models[name].test_cfg;tc.score_thr=cfg['raw_score_floor']
     all_images=adjacent_images|{x['image_id'] for x in isolated}; raw={name:{} for name in models}; ims={}
     for iid in sorted(all_images):
