@@ -10,11 +10,15 @@ data_root = '/home/rspip/zy/data/dataset/HRSC2016/'
 train_dataloader = dict(dataset=dict(
     data_root=data_root,
     ann_file='splits/train.txt',
-    data_prefix=dict(sub_data_root='', img_subdir='images', ann_subdir='annfiles')))
+    img_subdir='images',
+    ann_subdir='annfiles',
+    data_prefix=dict(sub_data_root='')))
 val_dataloader = dict(dataset=dict(
     data_root=data_root,
     ann_file='splits/test.txt',
-    data_prefix=dict(sub_data_root='', img_subdir='images', ann_subdir='annfiles')))
+    img_subdir='images',
+    ann_subdir='annfiles',
+    data_prefix=dict(sub_data_root='')))
 test_dataloader = val_dataloader
 
 randomness = dict(seed=20260905)
