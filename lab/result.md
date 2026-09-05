@@ -28,3 +28,15 @@
 - 大型产物：`runs/r001/artifacts/{retinanet_hrsc,oriented_rcnn_hrsc,controlled_*.json,controlled_summary.json,hrsc_qualification_population.json}`；不可直接删除，需按 RUN.json 与 `cqc-run run cleanup` 的逐项可重建条件执行。
 - 重建方式：先运行 `python src/audit_hrsc_qualification.py --config configs/r001_hrsc_qualification.json --output runs/r001/artifacts/hrsc_qualification_population.json`；在 d3 环境按两个配置训练，再以 `src/evaluate_r001_controlled.py` 在 score=.05/.25/.50 与 NMS=.1/.3/.5/1.0 重跑，最后执行 `python src/summarize_r001_controlled.py --inputs runs/r001/artifacts/controlled_*.json --output runs/r001/artifacts/controlled_summary.json`。输入为配置的 HRSC2016 根与公开 ai4rs 依赖。
 - C 复核状态（2026-09-05，数据/权重再核对后修订）：`inconclusive / protocol_drift`。服务器原始 `stop` 作为历史报告保留，但暂不接受为最终科学裁决。硬性原因收敛为 headline 效应未筛选共同清晰队列、控制匹配与依赖聚类未按协议执行、NMS 前候选未实际取得，且贪心匹配不等于最大基数匹配。此前把 best checkpoint/test 评估单列为硬阻断过重：官方 HRSC 也采用 `trainval -> test` 并在训练流程中评估 test；r001 实为 `train -> test`，与官方 RetinaNet 参考训练集不同，故 7.05 AP 差不能单独判复现失败。主机 `pth_data` 已确认存在 valid 的 HRSC Oriented R-CNN 3x 权重（AP50 0.9036），没有 HRSC RetinaNet 条目；纠偏复算优先复用前者和 MMRotate 官方 RetinaNet 权重。纠偏复算见后续任务。
+
+## r002
+
+- 假设：不改变 r001 的样本、四级退化、检测器类别或继续门，只纠正共同清晰队列、全局协变量匹配、最大基数匹配、真实 NMS 前候选和依赖 bootstrap 后重新裁决。
+- 回归证据：`cross_edge_maximum_cardinality`、`common_queue_isolation`、`shared_control_dependency`、`same_raw_candidates_across_nms`、`smd_gate` 五项反例均通过，记录在 `runs/r002/artifacts/r002_result.json`。
+- 观察者资格：Oriented R-CNN 的指定 valid 归档权重为 `trainval.txt -> test.txt`、报告 AP50=0.9036；当前唯一 ai4rs/d3 推理栈在 `torch.load` 时失败，原始错误为 `ModuleNotFoundError: numpy._core`。尝试兼容模块别名后触发 NumPy C-ABI `SystemError`，不能把该权重安全加载。候选 qhl 环境有 NumPy 1.26.4，但没有 mmengine/mmrotate/mmdet，不能形成兼容观察者。官方 RetinaNet v0.1.0 `trainval.txt -> test.txt` 权重下载、SHA-256 `ee4f18af46cb4057dbbc84c5753b86058bc75eb91c04ba7af3f8ee01d9dd1142`，已在 d3 通过 state-dict、`le90`、标准预处理及单图推理预检；但两观察者门要求同时满足。
+- 样本流：继承已审计相邻组 100（86 图）；排除相邻组源图后的孤立候选为 356。因 ORCNN 观察者兼容门失败，未生成任何退化候选、控制匹配、共同队列或效应统计；这不是零效应。
+- 运行与 provenance：`cqc-run` 的 `runs/r002/RUN.json` 为 COMPLETE，源提交 `abbe2b0f5a36fa66c628065ac7df98ef83b8a762`，GPU=1（GPU 2）。`r002_result.json` SHA-256 为 `fd741b0ec852f725eb42aab42554df402d2382d9a747b96d360e08aa56ee0824`；`raw_candidates.json.gz` SHA-256 为 `e7209ad33bf906434561100540f07d0f992cfad2994b3209166eaae94579ba87`，内容明确为 `not_generated`，而非以 NMS=1.0 冒充 NMS 前候选。
+- 结论：**inconclusive**。r002 的五项证据链回归通过，但指定的两观察者之一未通过加载兼容性门；协议要求此时不得登记 `stop` 或 `continue`，也不得用 r001 的不同训练 split 权重替换归档观察者以产生统计数字。r001 的原始数字仍为历史、不能用于本轮科学裁决。
+- 适用范围：本结论仅说明当前 d3/ai4rs 栈无法把主机登记的 ORCNN checkpoint 作为冻结观察者安全重建；不反映相邻实例假设真伪。
+- 大型产物：`runs/r002/artifacts/{r002_result.json,raw_candidates.json.gz}`，均具备本轮可执行重建入口但在结论和远端保存前不得清理。
+- 重建方式：在 d3 环境执行 `python src/run_r002_controlled.py --config configs/r002_controlled.json --output-dir runs/r002/artifacts`；该命令会先执行五个回归反例，再严格尝试指定 checkpoint，若仍无法兼容则可复现本轮 `inconclusive` 产物。
