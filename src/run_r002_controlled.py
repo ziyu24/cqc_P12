@@ -7,7 +7,7 @@ or max_per_img, then every requested NMS is applied offline to those identical
 candidate identifiers.
 """
 from __future__ import annotations
-import argparse, gzip, json, math, shutil, xml.etree.ElementTree as ET
+import argparse, gzip, json, math, shutil, sys, xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
 
@@ -20,6 +20,11 @@ from mmdet.apis import inference_detector, init_detector
 from scipy.optimize import linear_sum_assignment, milp, Bounds, LinearConstraint
 from scipy.sparse import lil_matrix
 from shapely.geometry import Polygon
+
+# The valid archived ORCNN checkpoint was produced with a NumPy version that
+# serialized this pre-2.0 module path.  Map it before torch unpickles weights;
+# this affects serialization compatibility only, not model arithmetic.
+sys.modules.setdefault('numpy._core', np.core)
 
 
 def poly(box):
