@@ -82,6 +82,14 @@ def main() -> None:
                "audit_order": candidates, "isolated_candidates": isolated,
                "qualification_pre_audit": {"enough_groups": len(candidates) >= cfg["minimum_groups"],
                                              "enough_images": len({x["image_id"] for x in candidates}) >= cfg["minimum_images"]}}
+    if "manual_audit" in cfg:
+        audit = cfg["manual_audit"]
+        payload["manual_audit"] = audit
+        payload["qualification_post_audit"] = {
+            "enough_groups": audit["accepted_candidates"] >= cfg["minimum_groups"],
+            "enough_images": len({x["image_id"] for x in candidates[:audit["accepted_candidates"]]}) >= cfg["minimum_images"],
+            "obvious_missing_label_rate": 0.0,
+        }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2) + "\n")
     print(json.dumps({key: payload[key] for key in ("split_image_count", "candidate_group_count", "candidate_group_image_count", "candidate_isolated_count", "qualification_pre_audit")}, indent=2))

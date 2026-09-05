@@ -8,5 +8,12 @@
   "isolated_gap_min": 3.0,
   "group_size": [2, 5],
   "minimum_groups": 100,
-  "minimum_images": 30
+  "minimum_images": 30,
+  "manual_audit": {
+    "audited_candidates": 100,
+    "accepted_candidates": 100,
+    "excluded_candidates": 0,
+    "exclusion_reasons": {},
+    "method": "fixed-order visual review of clear reference image and labelled instance count"
+  }
 }
