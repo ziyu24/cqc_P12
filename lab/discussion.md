@@ -45,16 +45,23 @@
 
 - 服务器完成了 HRSC2016 的候选组筛选、两种检测器训练、四级受控退化推理、分数/NMS 扫描和 DSR/RRSISR 公开资料审计，并把代码、配置和摘要提交到远端 `main`。
 - 服务器报告的方向性现象是：最严重等级主要增加 miss，merge 增量接近 0，duplicate 为 0；这使 H0 仍然是当前更强的科学解释。
-- 当前公开 MMRotate 的 Rotated RetinaNet R50-FPN 6x HRSC 参考为 AP50 84.80；服务器选择的 epoch 64 报告 77.75，相差 7.05 AP，已超过 r001 预注册的 2 AP 复现门。
+- 当前公开 MMRotate 的 Rotated RetinaNet R50-FPN 6x HRSC 参考为 AP50 84.80；服务器选择的 epoch 64 报告 77.75。二者训练集并不相同：公开配置使用 `trainval.txt`，r001 使用 `train.txt`，所以 7.05 AP 差不能单独判为实现复现失败。
+- MMRotate 的官方 HRSC 配置明确使用 `trainval.txt` 训练、`test.txt` 同时作为 `val_dataloader` 和 `test_dataloader`。因此 `val_dataloader` 是框架评估角色，不表示底层文件是独立 validation split；r001 实际是 `train.txt -> test.txt`，不是 `train -> val`。
+- 主机 `pth_data/readme.md` 的对应索引已有可直接复用的 HRSC2016 Oriented R-CNN R50-FPN 3x 权重：`baseline_oriented_rcnn_r50_fpn_3x_le90/HRSC_trainval_test/best_dota_mAP_epoch_34.pth`，AP50 为 0.9036、状态 valid、可直接 inference。当前 74 项索引没有 HRSC2016 Rotated RetinaNet 条目；第二观察者可使用 MMRotate 官方发布的 6x HRSC 权重，兼容性失败时才按官方 `trainval -> test` 配方重建。
 
 ### 改变裁决的协议偏差
 
 1. 汇总器只报告共同清晰队列的数量，没有用该队列筛选主要效应；可复现合成探针显示，共同队列只有 1 组时，加入 1 个不合格组会把应为 100pp 的主要效应错误报告为 50pp。
 2. 孤立伪组只按相邻组最小短边匹配，没有执行预注册的逐目标短边、局部对比度和两检测器清晰置信度匹配；bootstrap 又把控制图像的变化挂到相邻图像簇，未按所有原始图像依赖聚类。
-3. 两个训练配置都把 test 集作为逐 epoch 验证集并以 `save_best=auto` 选出报告 checkpoint；这与“验证/测试图像不得参与调参”冲突。r001 报告也明确使用了 best epoch，而非预先固定的最终 epoch。
-4. 推理脚本读取的是框架已经完成 NMS 后的 `pred_instances`；NMS=1.0 只是近似少抑制，不是真正的 NMS 前候选，不能完成原定的网络/后处理归因。
-5. 一对一匹配采用按 IoU 排序的贪心算法，却被注释为最大基数匹配。存在两真值、两预测的简单反例，贪心只得到 1 对而最大基数解为 2 对，会直接改变 resolved/miss 事件。
+3. 推理脚本读取的是框架已经完成 NMS 后的 `pred_instances`；NMS=1.0 只是近似少抑制，不是真正的 NMS 前候选，不能完成原定的网络/后处理归因。
+4. 一对一匹配采用按 IoU 排序的贪心算法，却被注释为最大基数匹配。存在两真值、两预测的简单反例，贪心只得到 1 对而最大基数解为 2 对，会直接改变 resolved/miss 事件。
+
+### 对数据划分裁决的修正
+
+- 撤回“使用 best checkpoint 本身足以使 r001 无效”的过重裁决。HRSC 模型库通常按 `trainval -> test` 报告 best；在本受控 P0 中，检测器只是冻结观察者，只要在退化分析前固定、且不按退化效应挑选 checkpoint，就可使用归档或官方 best。
+- r001 的 `train.txt -> test.txt` 仍须如实记录，但不再把它作为独立硬阻断。需要修正的是观察者与其参考训练集不一致：优先复用 `pth_data`/官方 `trainval -> test` 权重，而不是用 test 上的 final epoch 替代 best。
+- `splits/test.txt` 可继续作为本轮受控退化和统计样本；本轮不把该结果表述为独立外部泛化。若后续开发或选择退化模型，必须另留未参与选择的数据。
 
 ### 当前裁决
 
-r001 的服务器执行记录保留，但其科学状态从“已验证 stop”降为 `inconclusive / protocol_drift`。不接受现有百分点和置信区间作为最终证据，也不据此登记跨项目失败教训。下一步只做一次低成本纠偏复算：优先复用最终 epoch 或官方权重，不改变数据、退化和原始门槛；若修正后仍失败，才确认 stop。
+r001 的服务器执行记录保留，但其科学状态仍为 `inconclusive / protocol_drift`。这项裁决现在只由会改变主要效应或事件归因的四类问题支撑：共同队列未实际筛选、控制匹配与依赖聚类不合规、没有真正 NMS 前候选、贪心匹配不等于最大基数匹配。下一步只做一次低成本纠偏复算：优先复用 `pth_data` 或官方权重，不改变数据、退化和原始门槛；若修正后仍失败，才确认 stop。

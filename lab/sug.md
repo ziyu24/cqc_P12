@@ -14,10 +14,12 @@
 4. 必须保存解码、分数过滤之后且旋转 NMS 与 `max_per_img` 之前的候选；所有 NMS 阈值从同一批冻结候选离线生成。NMS 前和 NMS 后分别计算 resolved、merge、split/duplicate、miss，不能用 NMS=1.0 冒充 NMS 前结果。
 5. 置信区间必须覆盖相邻图像和所有控制图像的依赖。以共享任一原始图像为边形成依赖连通分量，按连通分量进行 4,000 次 bootstrap；不得只用相邻图像编号聚类。
 
-### 观察者资格与数据泄漏修正
+### 观察者固定与数据划分
 
-- 不再使用 test 表现选择 best epoch。优先评估 r001 已产生的固定最终 epoch：Oriented R-CNN 第 36 epoch、Rotated RetinaNet 第 72 epoch；若产物不存在，按原固定训练日程重建，但训练期间不得读取 test 指标。模型一经按 epoch 固定，不因 test 结果更换。
-- 使用与官方一致的 AP50 定义复核清晰基线：Oriented R-CNN 的既定参考为 90.36，Rotated RetinaNet 官方同配置参考为 84.80。任一观察者相差超过 2.0 AP 时，必须先定位配置/数据适配问题或改用对应官方权重；不能以不合格观察者继续生成科学结论。若无法得到两个合格观察者，本任务结论为 `inconclusive` 而非科学 `stop`。
+- 数据语义按实际文件记录：r001 是 `splits/train.txt -> splits/test.txt`；官方 MMRotate HRSC 配方是 `trainval.txt -> test.txt`，即使框架把 test 文件挂在 `val_dataloader` 下也不称作独立 validation split。本轮继续在既有 `splits/test.txt` 上做受控 P0，不另造数据争议，也不声称独立外部泛化。
+- Oriented R-CNN 直接优先复用主机 `pth_data/readme.md` 已登记的 valid 权重 `baseline_oriented_rcnn_r50_fpn_3x_le90/HRSC_trainval_test/best_dota_mAP_epoch_34.pth`（AP50 0.9036），并使用同目录配置。不得重复训练该观察者。
+- 当前 `pth_data` 索引没有 HRSC2016 Rotated RetinaNet。第二观察者优先使用 MMRotate 官方 `rotated_retinanet_obb_r50_fpn_6x_hrsc_rr_le90-ee4f18af.pth` 及其对应 `trainval -> test` 配置；先做 state-dict、角度版本、预处理和 AP50 兼容性验证。若当前 ai4rs 栈无法兼容，才按该官方配方在 `trainval.txt` 上重建，或如实保留 r001 `train.txt` 权重并把较弱观察者作为适用边界，不能把不同训练集的 84.80 直接当作 ±2 AP 复现门。
+- 两个观察者必须在任何退化结果计算前固定；可使用归档/官方 best checkpoint，不因后续主效应、merge、split 或 miss 结果更换 checkpoint。
 - 沿用 r001 固定的 100 个已审计相邻组，但补充逐候选的接纳记录；不能只保存“100/100”总数。任何接纳记录无法复核时重新盲于退化结果审计该候选。
 
 ### 必须先通过的回归反例
@@ -38,7 +40,7 @@
 ### 所需科学输出
 
 - 五个回归反例的通过记录；共同队列、完整合格集和匹配后共同支持集的样本流。
-- 两个固定观察者的 checkpoint 选择规则、AP50 复现差、训练/评估隔离证据。
+- 两个固定观察者的 checkpoint 来源、训练 split、配置/权重兼容性、clear AP50 和在退化分析前冻结的证据。
 - 四项匹配协变量的匹配前后标准化均差、控制复用检查和依赖连通分量统计。
 - 同一冻结候选上的真正 NMS 前结果及三个 NMS 后结果；最大基数匹配的逐组事件明细。
 - 纠偏后的主效应、事件级增量、置信区间、分数/NMS 敏感性和唯一科学裁决，并明确它与 r001 原始数字是否一致。
