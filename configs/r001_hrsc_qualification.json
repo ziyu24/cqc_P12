@@ -1,0 +1,12 @@
+{
+  "experiment_id": "r001",
+  "dataset": "HRSC2016",
+  "dataset_root": "/home/rspip/zy/data/dataset/HRSC2016",
+  "evaluation_split": "test.txt",
+  "random_seed": 20260905,
+  "adjacent_gap_max": 1.0,
+  "isolated_gap_min": 3.0,
+  "group_size": [2, 5],
+  "minimum_groups": 100,
+  "minimum_images": 30
+}
