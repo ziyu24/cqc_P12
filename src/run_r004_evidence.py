@@ -127,7 +127,7 @@ def regression():
             'smd_gate_detects_imbalance':smd([0,0],[10,10])>.1}
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--config',type=Path,required=True);p.add_argument('--out',type=Path,required=True);a=p.parse_args();c=json.loads(a.config.read_text());root=Path(c['dataset_root']);a.out.mkdir(parents=True,exist_ok=False)
+ p=argparse.ArgumentParser();p.add_argument('--config',type=Path,required=True);p.add_argument('--out',type=Path,required=True);a=p.parse_args();c=json.loads(a.config.read_text());root=Path(c['dataset_root']);a.out.mkdir(parents=True,exist_ok=True)
  ck=load_archived_checkpoint(c['orcnn_checkpoint']);orcnn=init_detector(c['orcnn_config'],None,device='cuda:0');orcnn.load_state_dict(ck['state_dict'],strict=True)
  retina=init_detector(c['retina_config'],None,device='cuda:0');retina.load_state_dict(load_archived_checkpoint(c['retina_checkpoint'])['state_dict'],strict=True);models={'orcnn':orcnn,'retina':retina}
  pop=json.loads(Path(c['population']).read_text());allgroups=pop['audit_order'][:c['candidate_group_limit']];adj={g['image_id'] for g in allgroups};iso=[x for x in pop['isolated_candidates'] if x['image_id'] not in adj];allids=adj|{x['image_id'] for x in iso};ims={x:cv2.imread(str(root/'images'/f'{x}.bmp')) for x in allids};truth={x:gt(root,x) for x in allids};raw={d:{} for d in models}
