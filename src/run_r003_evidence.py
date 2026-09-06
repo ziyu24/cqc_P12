@@ -143,7 +143,10 @@ def ap50(pred,truth):
     allp=sorted([(s,i,b) for i,x in pred.items() for b,s in x],reverse=True);used=defaultdict(set);tp=[]
     for _,iid,b in allp:
         q=[iou(polygon(b),x[0]) for x in truth[iid]];j=int(np.argmax(q)) if q else -1;ok=j>=0 and q[j]>=.5 and j not in used[iid];tp.append(ok);used[iid].add(j) if ok else None
-    if not allp:return 0.;tp=np.cumsum(tp);fp=np.arange(1,len(tp)+1)-tp;rec=tp/sum(len(x) for x in truth.values());pre=tp/(tp+fp);return float(np.trapz(np.maximum.accumulate(pre[::-1])[::-1],rec))
+    if not allp:return 0.
+    tp=np.cumsum(tp);fp=np.arange(1,len(tp)+1)-tp
+    rec=tp/sum(len(x) for x in truth.values());pre=tp/(tp+fp)
+    return float(np.trapz(np.maximum.accumulate(pre[::-1])[::-1],rec))
 def jsonable(x):
     if isinstance(x,dict):return {k:jsonable(v) for k,v in x.items() if not str(k).startswith('_')}
     if isinstance(x,list):return [jsonable(v) for v in x]
