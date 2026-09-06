@@ -96,31 +96,50 @@ def mean_degraded(result: dict, metric='AP75') -> float:
     return sum(values) / len(values)
 
 
+def load_completed() -> dict[str, dict]:
+    """Resume only fully persisted arms after an engineering retry."""
+    if not OUT.exists():
+        return {}
+    saved = json.loads(OUT.read_text(encoding='utf-8'))
+    if not isinstance(saved, dict):
+        raise RuntimeError(f'invalid persisted r005 result: {OUT}')
+    return {name: result for name, result in saved.items()
+            if not name.startswith('_') and isinstance(result, dict)
+            and set(result.get('grid', {})) == {f'{s:g}/{f}' for s, f in GRID}}
+
+
+def persist(results: dict[str, dict]) -> None:
+    OUT.write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+
 def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    results: dict[str, dict] = {}
+    results: dict[str, dict] = load_completed()
     # Fixed budget non-method controls and stage-one covariance choice, with
     # ambiguity threshold zero fixed throughout this first comparison.
     for name, arm, cov in [('B0','B0',1.), ('B1','B1',1.), ('B2','B2',1.),
                            ('B3','B3',1.), ('M0','M0',1.),
                            ('M1_cov05','M1',.5), ('M1_cov10','M1',1.), ('M1_cov20','M1',2.)]:
-        results[name] = train_and_grid(name, arm, cov, 0.)
-        OUT.write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        if name not in results:
+            results[name] = train_and_grid(name, arm, cov, 0.)
+            persist(results)
     chosen_cov = max(('M1_cov05','M1_cov10','M1_cov20'), key=lambda key: mean_degraded(results[key]))
     covariance = results[chosen_cov]['covariance_scale']
     # Only after covariance is frozen vary ambiguity threshold.
     for threshold in (.1, .2):
         name = f'M1_thr{threshold:g}'.replace('.', '')
-        results[name] = train_and_grid(name, 'M1', covariance, threshold)
-        OUT.write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        if name not in results:
+            results[name] = train_and_grid(name, 'M1', covariance, threshold)
+            persist(results)
     winner = max(('M1_cov05','M1_cov10','M1_cov20','M1_thr01','M1_thr02'), key=lambda key: mean_degraded(results[key]))
     # Mechanism ablations use the frozen full-M1 settings.
     for name, arm in [('M1_no_condition','M1_no_condition'), ('M1_no_competition','M1_no_competition'), ('M1_expanded_regression','M1_expanded_regression')]:
-        results[name] = train_and_grid(name, arm, covariance, results[winner]['ambiguity_threshold'])
-        OUT.write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        if name not in results:
+            results[name] = train_and_grid(name, arm, covariance, results[winner]['ambiguity_threshold'])
+            persist(results)
     results['_selection'] = {'covariance_stage_winner': chosen_cov, 'full_m1_winner': winner,
                              'mean_degraded_ap75': {key: mean_degraded(value) for key, value in results.items() if not key.startswith('_')}}
-    OUT.write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    persist(results)
     return 0
 
 
