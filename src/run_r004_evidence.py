@@ -17,6 +17,7 @@ from mmengine.structures import InstanceData
 from scipy.optimize import Bounds, LinearConstraint, linear_sum_assignment, milp
 from scipy.sparse import lil_matrix
 from audit_controlled_evidence import load_archived_checkpoint
+from controlled_statistics import stat, regression_checks
 from run_r003_evidence import (polygon, iou, gt, degradation, ring_contrast,
     smd, matching, events, jsonable)
 
@@ -92,38 +93,11 @@ def components(groups,controls):
         for image in {g['image_id']}|{x['image_id'] for x in c}:G.add_edge(('g',i),('i',image))
     return [[n[1] for n in q if n[0]=='g'] for q in nx.connected_components(G)]
 
-def stat(records,comps,reps,seed):
-    rng=np.random.default_rng(seed);draw=rng.integers(0,len(comps),size=(reps,len(comps)));out={}
-    for det in ('orcnn','retina'):
-      for score in (.05,.25,.5):
-       for nms in (.1,.3,.5):
-        for level in range(4):
-          key=f'{det}:{score}:{nms}:{level}';rr=[r for r in records if r['detector']==det and r['score']==score and r['nms']==nms and r['level']==level]
-          base={r['group']:r for r in records if r['detector']==det and r['score']==score and r['nms']==nms and r['level']==0}; vals={}
-          for r in rr:
-            b=base[r['group']];adj=lambda x:float(not x['final']['resolved']);ctrl=lambda x:np.mean([float(not z['final']['resolved']) for z in x])
-            ev={q:float(r['adj']['final'][q])-float(b['adj']['final'][q])-np.mean([float(x['final'][q])-float(y['final'][q]) for x,y in zip(r['ctrl'],b['ctrl'])]) for q in ('merge','duplicate','miss','cardinality_error')}
-            vals[r['group']]={'effect':adj(r['adj'])-adj(b['adj'])-(ctrl(r['ctrl'])-ctrl(b['ctrl'])),'adj_unresolved':adj(r['adj']),'ctrl_unresolved':ctrl(r['ctrl']),'target_recall_num':sum(not z['final']['miss'] for z in r['ctrl']),'target_recall_den':len(r['ctrl']),**ev}
-          result={}
-          for name in ('effect','adj_unresolved','ctrl_unresolved','merge','duplicate','miss','cardinality_error'):
-            bs=[]
-            for ix in draw:
-                gs=[g for j in ix for g in comps[j]];bs.append(np.mean([vals[g][name] for g in gs]))
-            result[name]={'estimate_pp':round(100*np.mean([v[name] for v in vals.values()]),3),'ci95_pp':[round(100*x,3) for x in np.quantile(bs,[.025,.975])]}
-          nums=[]
-          for ix in draw:
-            gs=[g for j in ix for g in comps[j]];nums.append(sum(vals[g]['target_recall_num'] for g in gs)/sum(vals[g]['target_recall_den'] for g in gs))
-          result['target_recall']={'estimate_pct':round(100*sum(v['target_recall_num'] for v in vals.values())/sum(v['target_recall_den'] for v in vals.values()),3),'ci95_pct':[round(100*x,3) for x in np.quantile(nums,[.025,.975])],'group_mean_pct':round(100*np.mean([v['target_recall_num']/v['target_recall_den'] for v in vals.values()]),3)}
-          out[key]=result
-    return out
-
 def regression():
     # Production matching: a cross-edge graph has two matches, not greedy one.
     truth=[polygon([0,0,8,2,0]),polygon([5,0,8,2,0])];pred=[{'id':0,'box':[2.5,0,8,2,0],'score':.9},{'id':1,'box':[0,0,8,2,0],'score':.8}]
-    return {'cross_edge_max_cardinality':len(matching(truth,pred))==2,
-            'one_sided_four_level_effect_100pp':True,
-            'shared_control_component_and_no_reuse':True,
-            'same_raw_candidates_all_postprocess':True,
+    return {**regression_checks(),
+            'cross_edge_max_cardinality':len(matching(truth,pred))==2,
             'smd_gate_detects_imbalance':smd([0,0],[10,10])>.1}
 
 def main():
