@@ -40,7 +40,7 @@ pipeline += [dict(type='mmdet.Pad', size=(800,800), pad_val=dict(img=(114,114,11
 
 train_dataloader = dict(
     batch_size=per_gpu_batch, num_workers=4, persistent_workers=True, pin_memory=True,
-    dataset=dict(type='RepeatDataset', times=3, dataset=dict(
+    dataset=dict(type='R005RepeatDataset', times=3, dataset=dict(
         type='HRSCDataset', data_root=dataset_root + '/', ann_file='splits/train.txt',
         data_prefix=dict(sub_data_root=''), img_subdir='images', ann_subdir='annfiles',
         filter_cfg=dict(filter_empty_gt=True), pipeline=pipeline)))

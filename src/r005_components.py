@@ -20,10 +20,34 @@ from mmdet.models.task_modules import anchor_inside_flags
 from mmdet.models.utils import unmap
 from mmdet.structures.bbox import BaseBoxes
 from mmdet.utils import ConfigType
+from mmengine.dataset import RepeatDataset
 from mmrotate.models.dense_heads.rotated_rtmdet_head import RotatedRTMDetSepBNHead
 from mmrotate.evaluation import eval_rbbox_map
 from mmrotate.evaluation.metrics.dota_metric import DOTAMetric
-from mmrotate.registry import METRICS, MODELS, TASK_UTILS, TRANSFORMS
+from mmrotate.registry import DATASETS, METRICS, MODELS, TASK_UTILS, TRANSFORMS
+
+
+@DATASETS.register_module()
+class R005RepeatDataset(RepeatDataset):
+    """RepeatDataset retaining the global draw index for shared degradation.
+
+    MMEngine's stock wrapper reduces the index modulo the original dataset
+    before transforms see it.  Keeping the outer index gives every repeated
+    training occurrence a deterministic draw while preserving the exact same
+    indexed sequence for every r005 arm and DDP rank.
+    """
+    def __getitem__(self, idx):
+        if not self._fully_initialized:
+            self.full_init()
+        source_index = self._get_ori_dataset_idx(idx)
+        # Insert the global repeat index before, rather than after, the child
+        # pipeline so SharedGaussianDownsample can use it.
+        data_info = self.dataset.get_data_info(source_index)
+        data_info['r005_draw_index'] = int(idx)
+        data = self.dataset.pipeline(data_info)
+        if data is None:
+            raise RuntimeError('r005 training pipeline returned an invalid sample')
+        return data
 
 
 @TRANSFORMS.register_module()
@@ -43,10 +67,12 @@ class SharedGaussianDownsample(BaseTransform):
 
     def transform(self, results):
         image_id = str(results.get('img_id', results.get('img_path', '')))
+        draw_index = int(results.get('r005_draw_index', 0))
         # Python hash is process-randomized; use a tiny explicit rolling hash.
         value = self.seed
         for char in image_id:
             value = (value * 131 + ord(char)) & 0xffffffff
+        value = (value * 131 + draw_index) & 0xffffffff
         rng = np.random.default_rng(value)
         if rng.random() >= self.prob:
             results['r005_degradation'] = np.array([0., 1.], dtype=np.float32)

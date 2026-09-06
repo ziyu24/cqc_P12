@@ -41,6 +41,8 @@ def main():
     first = transform.transform({'img': image.copy(), 'img_id': '100000001'})
     second = transform.transform({'img': image.copy(), 'img_id': '100000001'})
     assert torch.equal(torch.from_numpy(first['r005_degradation']), torch.from_numpy(second['r005_degradation']))
+    repeated = transform.transform({'img': image.copy(), 'img_id': '100000001', 'r005_draw_index': 1})
+    assert not torch.equal(torch.from_numpy(first['r005_degradation']), torch.from_numpy(repeated['r005_degradation'])), 'repeat index must affect the shared draw'
     # The covariance's principal axes rotate with the rbox (not with a stale
     # pre-rotation coordinate frame); 90 degrees swaps width/height variance.
     unrotated = _box_covariance(torch.tensor([[0., 0., 8., 4., 0.]]))[0]
