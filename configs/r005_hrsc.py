@@ -46,10 +46,11 @@ train_dataloader = dict(
 val_dataloader = dict(dataset=dict(data_root=dataset_root + '/', ann_file='splits/val.txt',
     data_prefix=dict(sub_data_root=''), img_subdir='images', ann_subdir='annfiles', pipeline=[
         dict(type='mmdet.LoadImageFromFile'),
-        dict(type='FixedGaussianDownsample', sigma=eval_sigma, factor=eval_factor),
         dict(type='mmdet.Resize', scale=(800,800), keep_ratio=True),
         dict(type='mmdet.LoadAnnotations', with_bbox=True, box_type='qbox'),
         dict(type='ConvertBoxType', box_type_mapping=dict(gt_bboxes='rbox')),
+        # Match the training coordinate system: resize first, then degrade.
+        dict(type='FixedGaussianDownsample', sigma=eval_sigma, factor=eval_factor),
         dict(type='mmdet.Pad', size=(800,800), pad_val=dict(img=(114,114,114))),
         dict(type='mmdet.PackDetInputs', meta_keys=('img_id','img_path','ori_shape','img_shape','scale_factor','r005_degradation'))]))
 test_dataloader = val_dataloader
