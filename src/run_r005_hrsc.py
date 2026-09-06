@@ -18,7 +18,7 @@ MMROTATE = Path('/home/rspip/zy/study/third_party/ai4rs')
 CONFIG = ROOT / 'configs/r005_hrsc.py'
 OUT = ROOT / 'runs/r005/artifacts/hrsc_development.json'
 GRID = [(sigma, factor) for sigma in (0., .8, 1.6, 3.2) for factor in (1, 2, 4, 8)]
-AP = re.compile(r"r005/(AP50|AP75):\s*([0-9.]+)")
+AP = re.compile(r"r005/(AP50|AP75|AR100):\s*([0-9.]+)")
 
 
 def env_for(arm: str, covariance: float = 1., threshold: float = .0) -> dict[str, str]:
@@ -72,7 +72,7 @@ def train_and_grid(name: str, arm: str, covariance=1., threshold=.0) -> dict:
         eval_env.update({'R005_EVAL_SIGMA': str(sigma), 'R005_EVAL_FACTOR': str(factor)})
         output = run([sys.executable, str(MMROTATE/'tools/test.py'), str(CONFIG), str(ckpt), '--launcher', 'none'], eval_env)
         values = {metric: float(value) for metric, value in AP.findall(output)}
-        if set(values) != {'AP50', 'AP75'}:
+        if set(values) != {'AP50', 'AP75', 'AR100'}:
             raise RuntimeError(f'missing AP metric for {name} {sigma}/{factor}')
         cells[f'{sigma:g}/{factor}'] = values
         if arm == 'B3':
@@ -81,7 +81,7 @@ def train_and_grid(name: str, arm: str, covariance=1., threshold=.0) -> dict:
             eval_env['R005_EVAL_TARGET'] = 'expanded'
             output = run([sys.executable, str(MMROTATE/'tools/test.py'), str(CONFIG), str(ckpt), '--launcher', 'none'], eval_env)
             values = {metric: float(value) for metric, value in AP.findall(output)}
-            if set(values) != {'AP50', 'AP75'}:
+            if set(values) != {'AP50', 'AP75', 'AR100'}:
                 raise RuntimeError(f'missing expanded AP metric for {name} {sigma}/{factor}')
             expanded_cells[f'{sigma:g}/{factor}'] = values
     result = {'arm': arm, 'covariance_scale': covariance, 'ambiguity_threshold': threshold,

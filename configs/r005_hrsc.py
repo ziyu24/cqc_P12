@@ -59,7 +59,7 @@ val_dataloader = dict(dataset=dict(data_root=dataset_root + '/', ann_file='split
         dict(type='mmdet.Pad', size=(800,800), pad_val=dict(img=(114,114,114))),
         dict(type='mmdet.PackDetInputs', meta_keys=('img_id','img_path','ori_shape','img_shape','scale_factor','r005_degradation'))]))
 test_dataloader = val_dataloader
-val_evaluator = [dict(type='DOTAMetric', metric='mAP', eval_mode='area', iou_thrs=[.5,.75], prefix='r005')]
+val_evaluator = [dict(type='R005DOTAMetric', metric='mAP', eval_mode='area', iou_thrs=[.5,.75], prefix='r005')]
 test_evaluator = val_evaluator
 
 # B1 retains native DynamicSoftLabelAssigner.  B2 ports RFLA's Gaussian

@@ -21,7 +21,9 @@ from mmdet.models.utils import unmap
 from mmdet.structures.bbox import BaseBoxes
 from mmdet.utils import ConfigType
 from mmrotate.models.dense_heads.rotated_rtmdet_head import RotatedRTMDetSepBNHead
-from mmrotate.registry import MODELS, TASK_UTILS, TRANSFORMS
+from mmrotate.evaluation import eval_rbbox_map
+from mmrotate.evaluation.metrics.dota_metric import DOTAMetric
+from mmrotate.registry import METRICS, MODELS, TASK_UTILS, TRANSFORMS
 
 
 @TRANSFORMS.register_module()
@@ -298,3 +300,39 @@ class EvidenceRotatedRTMDetSepBNHead(RotatedRTMDetSepBNHead):
             targets = unmap(targets, n, inside)
             metrics = unmap(metrics, n, inside)
         return anchors, labels, label_weights, targets, metrics, sample
+
+
+@METRICS.register_module()
+class R005DOTAMetric(DOTAMetric):
+    """DOTAMetric plus fixed-postprocessing AR@100 for r005's gate.
+
+    Predictions are first capped to the exact global top-100 per image used
+    for every arm and degradation cell.  AR100 is the mean, over IoU
+    thresholds .50:.05:.95, of GT-count-weighted class recall.  The existing
+    DOTAMetric AP50/AP75 computation remains the primary OBB metric.
+    """
+    def compute_metrics(self, results: list) -> dict:
+        metrics = super().compute_metrics(results)
+        gts, preds = zip(*results)
+        capped = []
+        for pred in preds:
+            order = np.argsort(-pred['scores'])[:100]
+            boxes, scores, labels = (pred['bboxes'][order],
+                                     pred['scores'][order],
+                                     pred['labels'][order])
+            capped.append([np.hstack((boxes[labels == label],
+                                      scores[labels == label, None]))
+                           for label in range(len(self.dataset_meta['classes']))])
+        recalls = []
+        for threshold in np.arange(.5, 1., .05):
+            _, per_class = eval_rbbox_map(
+                capped, gts, iou_thr=float(threshold),
+                use_07_metric=self.use_07_metric, box_type=self.predict_box_type,
+                dataset=self.dataset_meta['classes'], logger='silent', nproc=1)
+            total_gt = sum(item['num_gts'] for item in per_class)
+            if total_gt:
+                recalls.append(sum(item['num_gts'] * (item['recall'][-1]
+                               if item['recall'].size else 0.)
+                               for item in per_class) / total_gt)
+        metrics['AR100'] = round(float(np.mean(recalls)) if recalls else 0., 3)
+        return metrics
