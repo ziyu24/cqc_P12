@@ -1,0 +1,14 @@
+{
+  "seed": 20260906,
+  "dataset_root": "/home/rspip/zy/data/dataset/HRSC2016",
+  "population": "runs/r001/artifacts/hrsc_qualification_population.json",
+  "accepted_groups": 100,
+  "raw_score_floor": 0.05,
+  "scores": [0.05, 0.25, 0.5],
+  "nms": [0.1, 0.3, 0.5],
+  "bootstrap": 4000,
+  "orcnn_config": "/dev/shm/zy/study/pth_data/baseline_oriented_rcnn_r50_fpn_3x_le90/HRSC_trainval_test/cell06_orcnn_hrsc_3x_sgd_lr020.py",
+  "orcnn_checkpoint": "/dev/shm/zy/study/pth_data/baseline_oriented_rcnn_r50_fpn_3x_le90/HRSC_trainval_test/best_dota_mAP_epoch_34.pth",
+  "retina_config": "/home/rspip/zy/study/third_party/ai4rs/configs/rotated_retinanet/rotated-retinanet-rbox-le90_r50_fpn_rr-6x_hrsc.py",
+  "retina_checkpoint": "/dev/shm/zy/study/pth_data/rotated_retinanet_obb_r50_fpn_6x_hrsc_rr_le90-ee4f18af.pth"
+}
