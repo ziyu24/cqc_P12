@@ -58,5 +58,17 @@
 - 复核代码与产物：源提交 `8bad173f69dbd58d39ede54fa7b4d560e8470ea9`，配置 `configs/retinanet_hrsc_legacy_inference.py`，审计 `src/audit_hrsc_observers.py`。产物位于 `runs/r003/artifacts/observer_review/{observer_review.json,orcnn_clear_predictions.json.gz,retina_clear_predictions.json.gz}`；review JSON SHA-256=`ebf7ad43828f4c705163ef2ca75d10e5b7c7cfc8485a27405d840d81fbddeb77`。未改写旧结果或重新打开已结束运行。本补充为清晰观察者复核，不含修正后的退化效应，也没有再次独立核验人工接纳记录。
 - 复核重建：在原兼容推理依赖中运行 `python src/audit_hrsc_observers.py --config configs/r003_controlled.json --retina-config configs/retinanet_hrsc_legacy_inference.py --out runs/r003/artifacts/observer_review_rebuild`，输出目录必须尚不存在。仅做清晰推理，实际使用一张卡；其余卡已有负载，本次小规模复核无需新训练。补充产物尚未纳入原 RUN.json 的可清理输出，不可删除。
 - 当前科学裁决仍为 **inconclusive**，但理由已收敛为：正确 RetinaNet 的退化候选、基于正确 clear 置信度的控制匹配和最终主队列统计尚待补算，同时原要求的 NMS 前覆盖损失、生产反例与主队列 SMD 尚待补齐；不再把已解决的观察者 AP 或 27 组计数当作当前阻塞。
+
+## r004
+
+- 假设：在正确冻结观察者下，四级整图模糊/采样退化会对相邻舰船组造成超过唯一匹配孤立对照的、跨观察者一致的实例分解特异风险。
+- 观察者与实现：继承已实测官方 VOC07 AP50：归档 ORCNN **90.3558%**、正确旧版锚框语义 RetinaNet **84.7564%**（均为 trainval→test 冻结权重）。RetinaNet 只将 anchor `angle_version` 设为 Python `None`，bbox coder 保持 `le90`；两权重 strict load。候选为原生坐标恢复、score floor .05 后最终 NMS/max_per_img 前的候选；ORCNN 仍已受原生 RPN/RoI 预筛选，Retina 仍受原生 dense-head 预筛选。
+- 接纳、队列与平衡：沿用 100 个既有组的 clear 审阅依据（逐项路径在 `acceptance.json`，未查看退化输出）；100 接纳、0 排除。正确 clear 下共同完整分解为 74 组/63 图；排除相邻源图后孤立池 356，清晰协变量驱动的不放回匹配取得 172 个唯一控制目标/源图。最终也是 74 组/63 图、63 个依赖分量（每分量 1--3 组）。四协变量 SMD 从 [0.1826,0.0216,0.2924,0.1295] 降至最终 [0.0496,0.0075,0.0367,0.0478]，均 <=.1；达到 >=50 组、>=20 图门。
+- 主设定（score=.25/NMS=.1，4,000 次共享原图分量 bootstrap）：ORCNN 的四级主效应依次为 0.000 [0,0]、4.730 [0,10.256]、8.446 [2.055,15.064]、**3.266 [-4.445,11.302] pp**；RetinaNet 为 0.000 [0,0]、-1.689 [-5.556,2.597]、5.631 [-0.866,12.928]、**14.302 [3.444,25.321] pp**。最严重级孤立目标 recall 为 ORCNN 86.628% [81.034,91.813]、RetinaNet 76.163% [69.186,82.759]，均高于 50%。但 ORCNN 未达到 10pp、CI 跨零。
+- 事件与归因：最严重级的 ORCNN/Retina miss 增量为 3.266 [-4.445,11.302]/14.302 [3.444,25.321] pp；merge 为 -1.351 [-4.286,0]/-1.351 [-4.286,0] pp，duplicate 均 0。因此正向变化主要是普通 miss，未出现满足条件的 merge 或 duplicate。主设定 NMS 前→NMS 后未截断→最终的匹配数（相邻/控制）分别为：clear ORCNN 172/171→172/170→172/170，最严重 ORCNN 156/153→156/149→156/149；clear Retina 172/163→172/158→172/158，最严重 Retina 142/135→141/131→141/131。故最终输出截断损失为 0；NMS 损失存在但不构成跨观察者的实例分解机制证据。
+- 敏感性与验证：`r004_result.json` 包含四级×双观察者×3 score×3 NMS 的 **72** 个点估计和 95% CI（5328 条逐组条件记录）；所有敏感性使用同一 74 组固定队列。实际生产反例均为 True：交叉边最大基数两对、单侧四级记录 100pp、共享控制依赖/拒绝复用、同一候选的后处理一致性、SMD 失衡识别。完整合格集即这份已固定 74 组，不以退化结果二次筛选。
+- 结论：**stop**。本轮为有效的正确观察者条件实验，但继续条件不成立：在任何同一非饱和等级，两个观察者没有同时达到 >=10pp 且下界>0；同一种 merge/duplicate 也没有 >=5pp 的一致增量。区间仍容许 ORCNN 存在有意义正效应，故这不是接受零假设；而是停止当前“实例分解特异性→任务忠实退化”投入路线，不进入独立数据、真实配对或生成器开发。
+- 大型产物：`runs/r004/artifacts/{acceptance.json,raw_candidates.json.gz,r004_result.json}`，均由本次 `RUN.json` 声明为可重建；在远端结论保存前不得清理。
+- 重建方式：`/home/rspip/miniconda3/envs/d3/bin/python src/run_r004_evidence.py --config configs/r004_controlled.json --out runs/r004/artifacts`；输入为 HRSC2016、两个配置登记的 `pth_data` 权重和 r003 observer review。
 - 方案交接补充（2026-09-06）：只读核实 46 上 `runs/r003/RUN.json` 已为 `COMPLETE`，现有 `cqc-run run start` 只接受 `PLANNED`/`FAILED`，且要求 `run_id` 与唯一任务槽精确一致。因此修正前次“同编号追加补算”的执行建议：保留已结束记录与全部旧产物，将用户本次要求的后续补充实验登记为唯一 **r004**，科学问题、样本来源和原继续条件不变。这不是把 FAILED 的工程重试拆成新任务；r004 内工程失败仍须在同号修复继续。
 - 本次交付的是 r004 科学方案与 `configs/r004_controlled.json`，尚未启动新退化推理，也未产生新效应。配置固定正确的 RetinaNet 适配、候选上限、继承资产、四级退化和统计口径；其中 `candidate_group_limit` 仅代表候选名单上限，不代表接纳成功。旧 `src/run_r003_evidence.py` 不能直接消费该协议完成任务，SERVER 须补齐相应实现后经现有运行器执行，新增产物由自己的 RUN.json 精确声明。旧缓存只继承 ORCNN 且补齐新控制输入，错误 RetinaNet 分支不得继承。原观察者审计补充产物依旧不因此获得删除授权。
