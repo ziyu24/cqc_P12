@@ -4,7 +4,8 @@ sys.path.insert(0, '.')
 import torch
 from mmengine.structures import InstanceData
 from mmrotate.structures import RotatedBoxes
-from src.r005_components import GaussianRFLEvidenceAssigner
+from src.r005_components import (GaussianRFLEvidenceAssigner,
+                                 SharedGaussianDownsample, _box_covariance)
 
 def sample():
     priors = torch.tensor([[0.,0.,8.,8.],[2.5,0.,8.,8.],[20.,0.,8.,8.]])
@@ -30,6 +31,18 @@ def main():
     assert weights[1] < 1, 'near-tie responsibility must be downweighted'
     # Assignment support must not alter stored/regressed GT coordinates.
     assert torch.equal(gt.bboxes.tensor, torch.tensor([[0.,0.,8.,4.,0.],[5.,0.,8.,4.,0.]]))
+    # Every arm receives the same image-level draw when the protocol seed and
+    # image identity are fixed; this is independent of DataLoader order.
+    transform = SharedGaussianDownsample(prob=1., seed=5)
+    image = torch.zeros(16, 16, 3, dtype=torch.uint8).numpy()
+    first = transform.transform({'img': image.copy(), 'img_id': '100000001'})
+    second = transform.transform({'img': image.copy(), 'img_id': '100000001'})
+    assert torch.equal(torch.from_numpy(first['r005_degradation']), torch.from_numpy(second['r005_degradation']))
+    # The covariance's principal axes rotate with the rbox (not with a stale
+    # pre-rotation coordinate frame); 90 degrees swaps width/height variance.
+    unrotated = _box_covariance(torch.tensor([[0., 0., 8., 4., 0.]]))[0]
+    rotated = _box_covariance(torch.tensor([[0., 0., 8., 4., torch.pi / 2]]))[0]
+    assert torch.allclose(rotated.diag(), unrotated.diag().flip(0), atol=1e-5)
     print('r005 counterexamples: PASS')
 
 if __name__ == '__main__':
