@@ -72,4 +72,4 @@ if method_arm not in ('B1', 'B3', 'B0'):
 
 work_dir = f'{run_root}/{arm}'
 randomness = dict(seed=seed, deterministic=False)
-default_hooks = dict(checkpoint=dict(interval=1, max_keep_ckpts=1, save_best='dota_ap07/mAP', rule='greater'))
+default_hooks = dict(checkpoint=dict(interval=1, max_keep_ckpts=1, save_best='r005/AP75', rule='greater'))
