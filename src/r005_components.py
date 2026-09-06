@@ -66,6 +66,27 @@ class SharedGaussianDownsample(BaseTransform):
 
 
 @TRANSFORMS.register_module()
+class FixedGaussianDownsample(BaseTransform):
+    """Evaluation-only fixed grid point; preserves the same metadata schema."""
+    def __init__(self, sigma=0.0, factor=1):
+        self.sigma, self.factor = float(sigma), int(factor)
+
+    def transform(self, results):
+        image = results['img']
+        if self.sigma > 0:
+            kernel = int(2 * math.ceil(3 * self.sigma) + 1)
+            image = cv2.GaussianBlur(image, (kernel, kernel), sigmaX=self.sigma, sigmaY=self.sigma)
+        if self.factor > 1:
+            height, width = image.shape[:2]
+            reduced = cv2.resize(image, (max(1, width // self.factor), max(1, height // self.factor)), interpolation=cv2.INTER_AREA)
+            image = cv2.resize(reduced, (width, height), interpolation=cv2.INTER_LINEAR)
+        results['img'] = image
+        results['img_shape'] = image.shape[:2]
+        results['r005_degradation'] = np.array([self.sigma, self.factor], dtype=np.float32)
+        return results
+
+
+@TRANSFORMS.register_module()
 class BlurBoxExpansion(BaseTransform):
     """B3 only: expand rotated training boxes by effective isotropic support.
 
