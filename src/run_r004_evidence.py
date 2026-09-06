@@ -26,8 +26,8 @@ def rows(x):
 
 def raw_orcnn(model, image):
     h=model.roi_head.bbox_head; old=h._predict_by_feat_single
-    def capture(roi,cls,bbox,meta,rescale=False,rcnn_test_cfg=None):
-        z=old(roi,cls,bbox,meta,rescale,rcnn_test_cfg=None); out=InstanceData()
+    def capture(*args,**kw):
+        kw['rcnn_test_cfg']=None;z=old(*args,**kw); out=InstanceData()
         out.bboxes=z.bboxes;out.scores=z.scores[:,:-1].reshape(-1);out.score_matrix=z.scores
         out.labels=torch.zeros(len(out.scores),dtype=torch.long,device=out.scores.device);return out
     h._predict_by_feat_single=capture
