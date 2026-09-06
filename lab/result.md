@@ -41,3 +41,15 @@
 - 大型产物：`runs/r002/artifacts/{r002_result.json,raw_candidates.json.gz}`，均具备本轮可执行重建入口但在结论和远端保存前不得清理。
 - 重建方式：在 d3 环境执行 `python src/run_r002_controlled.py --config configs/r002_controlled.json --output-dir runs/r002/artifacts`；该命令会先执行五个回归反例，再严格尝试指定 checkpoint，若仍无法兼容则可复现本轮 `inconclusive` 产物。
 - B 复核补充（2026-09-06）：保留本轮 `inconclusive` 和全部历史产物，但撤回“当前环境无法安全重建归档 ORCNN 参数”的持续阻塞判断。本次在原环境用局部 NumPy metadata Unpickler 成功读取 348 个有限参数张量，归档配置模型 `strict=True` 加载全部匹配；尚未做前向与 clear AP50。另以实际生产汇总函数复现“应为 100pp 却得到 NaN”，并核实 ORCNN 没有现 hook 所需接口、RetinaNet identity hook 会遗漏坐标恢复。原五项自测 True 不证明整条证据链通过。审计源码、输入校验值与论文路线见 `lab/discussion.md` 2026-09-06 节；复现命令为 `python src/audit_controlled_evidence.py --config configs/r002_controlled.json --source src/run_r002_controlled.py --load-observer`。本补充没有产生新的科学效应统计。
+
+## r003
+
+- 假设：在冻结的 HRSC2016 相邻目标组、四级确定性整图退化中，两个冻结观察者会出现超过匹配孤立对照的实例分解特异错误。
+- 代码与配置：`configs/r003_controlled.json`、`src/run_r003_evidence.py`。ORCNN 以局部 NumPy metadata unpickler 严格加载；RetinaNet 使用登记的 MMRotate 官方权重。ORCNN/Retina 的生产候选回放在非单位缩放图 `100000001.bmp` 上分别为 22/22、2/2，逐框最大绝对差均为 0。
+- 清晰观察者核验：标准推理覆盖 HRSC test 453 图。修正报表函数后得到内部 greedy-AP50 计算 ORCNN=0.9585、Retina=0.1554（`runs/r003/artifacts/clear_ap50.json`）。这不是官方 DOTA evaluator 的已验证 AP50；尤其 Retina 值与登记官方 84.80 明显不符，故不能把它登记为有效的双观察者标准 AP50。
+- 样本和平衡：100/100 逐组盲审接纳、0 排除；86 个相邻源图，排除后孤立池 356，匹配 240 个唯一控制目标/源图。四协变量 SMD 匹配前为 [0.2072,0.0551,0.1049,0.0086]，匹配后为 [0.0488,0.0498,0.0252,0.0460]，均 <=0.1。两个观察者的 clear score=.25/NMS=.1 共同队列却只有 27 组、23 图，低于预定的至少 50 组/20 图门；依赖连通分量 23 个，大小为 72 或 144 条条件记录。
+- 条件性信号（非主结论）：在这 27 组的 score=.25/NMS=.1 下，ORCNN 四级效应为 0.0 [0,0]、3.704 [0,11.111]、0.0 [-15.385,13.793]、-7.407 [-26.087,10.0] pp；Retina 为 0.0 [0,0]、7.407 [0,19.231]、11.111 [-8.008,32.146]、14.815 [-7.692,36.0] pp。最严重级 Retina miss 增量 40.741 [22.572,60.0] pp、ORCNN miss 增量 14.815 [3.704,27.586] pp；两者 duplicate 均为 0。孤立 recall 最严重级 ORCNN 84.568 [72.024,95.679]%、Retina 65.741 [52.665,77.778]%。这些数字仅是未达主队列门的诊断，不能用于继续或停止裁决。
+- 敏感性与缺口：最严重级主分数/NMS 的 27 组效应如上；ORCNN 在 score .05/.25/.50 与 NMS .1/.3/.5 范围为 -18.519 至 0 pp，Retina 为 0 至 18.519 pp，未显示双观察者稳定方向。运行产物未保存 NMS 前 matching coverage/最终 NMS 覆盖损失，也未把规定的生产回归反例写成可审计结果；这两项不能事后以近似数替代。
+- 结论：**inconclusive**。控制平衡、候选回放和四级条件统计已生成，但有效双观察者标准 AP50 未建立、共同 clear 队列只有 27<50，且 NMS 前覆盖损失和生产反例输出缺失。因此证据既不满足 `continue`，也不是有效证据下的 `stop`；不得据此进入独立数据或真实配对桥接路线。
+- 大型产物：`runs/r003/artifacts/{acceptance.json,clear_ap50.json,raw_candidates.json.gz,r003_result.json}`；`r003_result.json` 约 141 MiB、候选约 162 MiB。均只能依 RUN.json 的可重建条件由 `cqc-run run cleanup` 清理。
+- 重建方式：`/home/rspip/miniconda3/envs/d3/bin/python src/run_r003_evidence.py --config configs/r003_controlled.json --out runs/r003/artifacts`；clear 补算为 `python src/evaluate_r003_clear_ap.py --config configs/r003_controlled.json --out runs/r003/artifacts/clear_ap50.json`。
