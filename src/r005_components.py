@@ -127,22 +127,70 @@ def _box_covariance(boxes: torch.Tensor) -> torch.Tensor:
 
 @TASK_UTILS.register_module()
 class GaussianRFLEvidenceAssigner(BaseAssigner):
-    """RFLA-style Gaussian receptive-field assignment with M1 extensions.
+    """RFLA Gaussian-distance, hierarchical assignment with M1 extensions.
 
     `conditioned=False` is B2.  `conditioned=True` adds a known degradation
     covariance and ambiguity discount.  The assigner reports one owner per
     prior by argmin cost; its extra `r005_weights` are consumed by the head.
     """
-    def __init__(self, topk=13, rf_scale=1.0, conditioned=False,
+    def __init__(self, topk=(6, 1), rf_scale=1.0, conditioned=False,
                  covariance_scale=1.0, ambiguity_threshold=0.1,
                  fixed_support=0.0, iou_calculator: ConfigType=dict(type='RBboxOverlaps2D')):
-        self.topk = int(topk)
+        # RFLA's published HieAssigner uses the two stages [6, 1].  Keep the
+        # argument flexible solely for unit-sized counterexamples.
+        self.topk = (int(topk), 1) if isinstance(topk, int) else tuple(map(int, topk))
         self.rf_scale = float(rf_scale)
         self.conditioned = bool(conditioned)
         self.covariance_scale = float(covariance_scale)
         self.ambiguity_threshold = float(ambiguity_threshold)
         self.fixed_support = float(fixed_support)
         self.iou_calculator = TASK_UTILS.build(iou_calculator)
+
+    @staticmethod
+    def _kl_distance(gt_cov: torch.Tensor, rf_cov: torch.Tensor,
+                     delta: torch.Tensor) -> torch.Tensor:
+        """KL(N_gt || N_rf), the Gaussian receptive-field distance in RFLA.
+
+        The two covariance arguments are [G,2,2] and [P,2,2]; delta is
+        [P,G,2].  This is the oriented-box adaptation: the GT covariance is
+        rotated with its OBB, while every feature prior is an isotropic
+        receptive-field Gaussian in the same augmented-image coordinate frame.
+        """
+        inverse_rf = torch.linalg.inv(rf_cov)  # [P,2,2]
+        trace = torch.einsum('pij,gji->pg', inverse_rf, gt_cov)
+        mahal = torch.einsum('pgi,pij,pgj->pg', delta, inverse_rf, delta)
+        _, log_gt = torch.linalg.slogdet(gt_cov)
+        _, log_rf = torch.linalg.slogdet(rf_cov)
+        return .5 * (trace + mahal - 2. + log_rf[:, None] - log_gt[None, :])
+
+    def _hierarchical_candidates(self, costs: torch.Tensor,
+                                 rf_cov: torch.Tensor,
+                                 gt_cov: torch.Tensor,
+                                 delta: torch.Tensor) -> torch.Tensor:
+        """Two-stage RFLA HieAssigner candidate set, adapted to rbox Gaussians.
+
+        Stage one selects the published top-6 receptive fields per object.
+        Stage two repeats the ranking with the receptive field shrunk by 0.9
+        and adds one candidate only where stage one had no ownership.  This
+        preserves the paper's hierarchical-label-assignment structure rather
+        than substituting ordinary centre sampling.
+        """
+        num_priors = costs.shape[0]
+        first_k, second_k = self.topk
+        candidates = torch.zeros_like(costs, dtype=torch.bool)
+        candidates.scatter_(0, costs.topk(min(first_k, num_priors), dim=0,
+                                          largest=False).indices, True)
+        # As in HieAssigner.anchor_rescale(..., ratio=.9), the second stage
+        # uses a smaller receptive field.  It is only an extra proposal stage.
+        second_costs = self._kl_distance(gt_cov, rf_cov * (.9 ** 2), delta)
+        second = torch.zeros_like(candidates)
+        second.scatter_(0, second_costs.topk(min(second_k, num_priors), dim=0,
+                                               largest=False).indices, True)
+        has_initial = candidates.any(dim=1)
+        second_owner = second_costs.masked_fill(~second, float('inf')).argmin(dim=1)
+        add = ~has_initial
+        candidates[add, second_owner[add]] = True
+        return candidates
 
     def assign(self, pred_instances: InstanceData, gt_instances: InstanceData,
                gt_instances_ignore: Optional[InstanceData] = None, **kwargs):
@@ -161,25 +209,24 @@ class GaussianRFLEvidenceAssigner(BaseAssigner):
         points = priors[:, :2]
         strides = priors[:, 2].clamp_min(1.)
         centres = boxes[:, :2]
-        covariance = _box_covariance(boxes)
-        rf_var = (self.rf_scale * strides[:, None, None, None]).square() * torch.eye(2, device=device)[None, None]
-        # [P,G,2,2]: GT support plus the level-specific Gaussian receptive field.
-        total = covariance[None] + rf_var
+        eye = torch.eye(2, device=device, dtype=boxes.dtype)
+        covariance = _box_covariance(boxes) + 1e-5 * eye
+        # The FPN location is represented by its Gaussian receptive field.
+        rf_cov = (self.rf_scale * strides).square()[:, None, None] * eye
         degradation = kwargs.get('degradation', None)
+        extra = 0.0
         if self.conditioned and degradation is not None:
             sigma, factor = float(degradation[0]), float(degradation[1])
             extra = self.covariance_scale * (sigma*sigma + max(factor*factor-1., 0.)/12.)
-            total = total + extra * torch.eye(2, device=device)[None, None]
+            covariance = covariance + extra * eye
         elif self.fixed_support > 0:
-            total = total + self.fixed_support**2 * torch.eye(2, device=device)[None, None]
+            covariance = covariance + self.fixed_support**2 * eye
         delta = points[:, None, :] - centres[None, :, :]
-        inverse = torch.linalg.inv(total)
-        mahal = torch.einsum('pgi,pgij,pgj->pg', delta, inverse, delta)
-        # Lower Gaussian distance is better. Restrict each GT to its top-k
-        # receptive candidates, then resolve every collision to one owner.
-        costs = mahal
-        candidate = torch.zeros_like(costs, dtype=torch.bool)
-        candidate.scatter_(0, costs.topk(min(self.topk, num_priors), dim=0, largest=False).indices, True)
+        costs = self._kl_distance(covariance, rf_cov, delta)
+        responsibility = torch.softmax(-costs, dim=1)
+        candidate = self._hierarchical_candidates(costs, rf_cov, covariance, delta)
+        # Lower Gaussian distance is better.  A point owns only the instance
+        # with the greatest normalized responsibility among its candidates.
         masked = costs.masked_fill(~candidate, float('inf'))
         best_cost, owner = masked.min(dim=1)
         positive = torch.isfinite(best_cost)
@@ -190,13 +237,20 @@ class GaussianRFLEvidenceAssigner(BaseAssigner):
             ious = self.iou_calculator(pred_instances.bboxes[positive], gt_instances.bboxes)
             overlaps[positive] = ious[torch.arange(positive.sum(), device=device), owner[positive]]
             weights[positive] = 1.
-            if self.conditioned and num_gt > 1 and self.ambiguity_threshold > 0:
-                two = costs.topk(2, dim=1, largest=False).values
-                margin = (two[:, 1] - two[:, 0]) / two[:, 0].abs().clamp_min(1.)
+            # Ambiguity discount is an M1-only degradation effect.  Thus at
+            # sigma=0/factor=1 both its covariance and its extra weights are
+            # identically B2, including when a nonzero threshold was selected.
+            if (self.conditioned and extra > 0 and num_gt > 1
+                    and self.ambiguity_threshold > 0):
+                # Gaussian responsibilities are normalized across all GT;
+                # use their top-two separation, not a raw centre-distance.
+                two = responsibility.topk(2, dim=1, largest=True).values
+                margin = two[:, 0] - two[:, 1]
                 ambiguous = positive & (margin < self.ambiguity_threshold)
                 weights[ambiguous] = (margin[ambiguous] / self.ambiguity_threshold).clamp(0., 1.)
         result = AssignResult(num_gt, assigned, overlaps, labels=labels)
         result.set_extra_property('r005_weights', weights)
+        result.set_extra_property('r005_responsibility', responsibility)
         return result
 
 

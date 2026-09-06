@@ -23,11 +23,14 @@ def main():
     zero_m1 = m1.assign(pred, gt, degradation=(0.,1.))
     assert torch.equal(zero_b2.gt_inds, zero_m1.gt_inds), 'zero degradation must equal B2'
     assert torch.allclose(zero_b2.max_overlaps, zero_m1.max_overlaps), 'zero degradation quality differs'
+    assert torch.equal(zero_b2.get_extra_property('r005_weights'), zero_m1.get_extra_property('r005_weights')), 'zero degradation weights differ'
     nonzero = m1.assign(pred, gt, degradation=(3.2,8.))
     # One prior has at most one owner; assignment representation makes this a production invariant.
     assert nonzero.gt_inds.ndim == 1 and (nonzero.gt_inds >= 0).all()
     weights = nonzero.get_extra_property('r005_weights')
     assert (weights >= 0).all() and (weights <= 1).all()
+    responsibility = nonzero.get_extra_property('r005_responsibility')
+    assert torch.allclose(responsibility.sum(dim=1), torch.ones(3)), 'GT responsibilities must sum to one'
     assert weights[1] < 1, 'near-tie responsibility must be downweighted'
     # Assignment support must not alter stored/regressed GT coordinates.
     assert torch.equal(gt.bboxes.tensor, torch.tensor([[0.,0.,8.,4.,0.],[5.,0.,8.,4.,0.]]))

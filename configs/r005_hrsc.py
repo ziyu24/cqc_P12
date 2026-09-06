@@ -57,13 +57,14 @@ test_dataloader = val_dataloader
 val_evaluator = [dict(type='DOTAMetric', metric='mAP', eval_mode='area', iou_thrs=[.5,.75], prefix='r005')]
 test_evaluator = val_evaluator
 
-# B1 retains native DynamicSoftLabelAssigner. B2 is an RFLA-style Gaussian
-# receptive field assignment; M1 with zero degradation invokes its same path.
+# B1 retains native DynamicSoftLabelAssigner.  B2 ports RFLA's Gaussian
+# receptive-field KL distance and published [6, 1] hierarchical ranking; M1
+# with zero degradation invokes that exact same path.
 if method_arm not in ('B1', 'B3', 'B0'):
     conditioned = method_arm in ('M1', 'M1_no_competition', 'M1_expanded_regression')
     model = dict(bbox_head=dict(type='EvidenceRotatedRTMDetSepBNHead'),
         train_cfg=dict(allowed_border=-1, pos_weight=-1, debug=False,
-            assigner=dict(type='GaussianRFLEvidenceAssigner', topk=13,
+            assigner=dict(type='GaussianRFLEvidenceAssigner', topk=(6, 1),
             rf_scale=1.0, conditioned=conditioned,
             covariance_scale=covariance_scale if method_arm != 'M1_no_condition' else 0.0,
             ambiguity_threshold=ambiguity_threshold if method_arm != 'M1_no_competition' else 0.0,
