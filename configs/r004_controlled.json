@@ -1,0 +1,56 @@
+{
+  "seed": 20260906,
+  "dataset_root": "/home/rspip/zy/data/dataset/HRSC2016",
+  "population": "runs/r001/artifacts/hrsc_qualification_population.json",
+  "candidate_group_limit": 100,
+  "raw_score_floor": 0.05,
+  "scores": [0.05, 0.25, 0.5],
+  "nms": [0.1, 0.3, 0.5],
+  "bootstrap": 4000,
+  "orcnn_config": "/dev/shm/zy/study/pth_data/baseline_oriented_rcnn_r50_fpn_3x_le90/HRSC_trainval_test/cell06_orcnn_hrsc_3x_sgd_lr020.py",
+  "orcnn_checkpoint": "/dev/shm/zy/study/pth_data/baseline_oriented_rcnn_r50_fpn_3x_le90/HRSC_trainval_test/best_dota_mAP_epoch_34.pth",
+  "retina_config": "configs/retinanet_hrsc_legacy_inference.py",
+  "retina_checkpoint": "/dev/shm/zy/study/pth_data/rotated_retinanet_obb_r50_fpn_6x_hrsc_rr_le90-ee4f18af.pth",
+  "reuse": {
+    "observer_review": "runs/r003/artifacts/observer_review/observer_review.json",
+    "orcnn_clear_predictions": "runs/r003/artifacts/observer_review/orcnn_clear_predictions.json.gz",
+    "retina_clear_predictions": "runs/r003/artifacts/observer_review/retina_clear_predictions.json.gz",
+    "orcnn_raw_cache": "runs/r003/artifacts/raw_candidates.json.gz",
+    "reuse_detectors_from_raw_cache": ["orcnn"],
+    "require_image_level_coverage": true
+  },
+  "degradation": {
+    "levels": [
+      {"id": 0, "sigma": 0.0, "area_downsample_factor": 1},
+      {"id": 1, "sigma": 0.8, "area_downsample_factor": 2},
+      {"id": 2, "sigma": 1.6, "area_downsample_factor": 4},
+      {"id": 3, "sigma": 3.2, "area_downsample_factor": 8}
+    ],
+    "downsample_interpolation": "INTER_AREA",
+    "restore_interpolation": "INTER_CUBIC",
+    "inherit_opencv_rounding_and_border": true
+  },
+  "analysis": {
+    "primary_score": 0.25,
+    "primary_nms": 0.1,
+    "minimum_common_groups": 50,
+    "minimum_adjacent_images": 20,
+    "maximum_absolute_smd": 0.1,
+    "covariates": ["log_short_side", "local_ring_contrast", "orcnn_clear_confidence", "retina_clear_confidence"],
+    "control_target_reuse": false,
+    "control_source_image_reuse": false,
+    "cohort_selection_uses_clear_only": true,
+    "fixed_primary_cohort_for_sensitivity": true,
+    "matching_iou": 0.5,
+    "related_prediction_iou": 0.3,
+    "merge_gt_area_coverage": 0.5,
+    "duplicate_iou": 0.3,
+    "bootstrap_unit": "connected_component_of_shared_source_images",
+    "effect_unit": "group",
+    "paired_resamples_across_all_conditions": true,
+    "minimum_isolated_recall_exclusive": 0.5,
+    "minimum_effect_pp": 10.0,
+    "minimum_non_miss_event_increment_pp": 5.0,
+    "non_miss_events": ["merge", "duplicate"]
+  }
+}
