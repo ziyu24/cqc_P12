@@ -35,7 +35,13 @@ def env_for(arm: str, covariance: float = 1., threshold: float = .0) -> dict[str
 def run(argv: list[str], env: dict[str, str]) -> str:
     completed = subprocess.run(argv, cwd=ROOT, env=env, text=True,
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                               check=True)
+                               check=False)
+    if completed.returncode:
+        failure = ROOT / 'runs/r005/artifacts/subprocess_failure.log'
+        failure.parent.mkdir(parents=True, exist_ok=True)
+        with failure.open('a', encoding='utf-8') as stream:
+            stream.write('$ ' + ' '.join(argv) + '\n' + completed.stdout + '\n')
+        raise subprocess.CalledProcessError(completed.returncode, argv, completed.stdout)
     return completed.stdout
 
 
