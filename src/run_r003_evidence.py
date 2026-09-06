@@ -44,7 +44,13 @@ def raw_orcnn(model,image):
     h._predict_by_feat_single=capture
     try:
         x=inference_detector(model,image).pred_instances
-        return [dict(z, score_matrix=list(map(float, x.score_matrix[i].detach().cpu().numpy()))) for i,z in enumerate(rows(x))]
+        # Keep the exact decoded tensors for the in-process production replay.
+        # JSON output below strips these private fields and retains the audited
+        # numeric copy.  Reconstructing float32 from Python lists changed two
+        # boundary candidates on a real HRSC image.
+        return [dict(z, score_matrix=list(map(float, x.score_matrix[i].detach().cpu().numpy())),
+                     _box=x.bboxes[i].detach(),_score_matrix=x.score_matrix[i].detach())
+                for i,z in enumerate(rows(x))]
     finally:h._predict_by_feat_single=old
 def raw_retina(model,image):
     h=model.bbox_head;old=h.predict_by_feat
@@ -58,7 +64,11 @@ def offline(raw,score,nms,maxn=2000,orcnn=False):
         # filtering.  Do not prefilter Python floats before it.
         x=raw
         if not x:return []
-        b=torch.tensor([z['box'] for z in x],dtype=torch.float32,device='cuda');s=torch.tensor([z['score_matrix'] for z in x],dtype=torch.float32,device='cuda');cfg={'type':'nms_rotated','iou_threshold':nms}
+        if all('_box' in z and '_score_matrix' in z for z in x):
+            b=torch.stack([z['_box'] for z in x]);s=torch.stack([z['_score_matrix'] for z in x])
+        else:
+            b=torch.tensor([z['box'] for z in x],dtype=torch.float32,device='cuda');s=torch.tensor([z['score_matrix'] for z in x],dtype=torch.float32,device='cuda')
+        cfg={'type':'nms_rotated','iou_threshold':nms}
         det,_,keep=multiclass_nms(b,s,score,cfg,maxn,return_inds=True,box_dim=5)
         return [dict(x[int(i)],score=float(det[j,-1])) for j,i in enumerate(keep.cpu().tolist())]
     x=[z for z in raw if z['score']>=score]
@@ -128,6 +138,10 @@ def ap50(pred,truth):
     for _,iid,b in allp:
         q=[iou(polygon(b),x[0]) for x in truth[iid]];j=int(np.argmax(q)) if q else -1;ok=j>=0 and q[j]>=.5 and j not in used[iid];tp.append(ok);used[iid].add(j) if ok else None
     if not allp:return 0.;tp=np.cumsum(tp);fp=np.arange(1,len(tp)+1)-tp;rec=tp/sum(len(x) for x in truth.values());pre=tp/(tp+fp);return float(np.trapz(np.maximum.accumulate(pre[::-1])[::-1],rec))
+def jsonable(x):
+    if isinstance(x,dict):return {k:jsonable(v) for k,v in x.items() if not k.startswith('_')}
+    if isinstance(x,list):return [jsonable(v) for v in x]
+    return x
 def main():
     p=argparse.ArgumentParser();p.add_argument('--config',type=Path,required=True);p.add_argument('--out',type=Path,required=True);a=p.parse_args();cfg=json.loads(a.config.read_text());root=Path(cfg['dataset_root']);a.out.mkdir(parents=True,exist_ok=True)
     ck=archived(cfg['orcnn_checkpoint']);orcnn=init_detector(cfg['orcnn_config'],None,device='cuda:0');orcnn.load_state_dict(ck['state_dict'],strict=True);orcnn.dataset_meta=ck.get('meta',{}).get('dataset_meta',{})
@@ -172,6 +186,6 @@ def main():
                         ar=raw[name][g['image_id']][l];is_o=name=='orcnn';cp=[events([t],offline(raw[name][x['image_id']][l],score,nms,orcnn=is_o)) for x,t in zip(cc,tc)];R.append({'id':f'{name}:{gi}:{score}:{nms}:{l}','group':gi,'image':g['image_id'],'controls':[x['image_id'] for x in cc],'detector':name,'score':score,'nms':nms,'level':l,'raw_ids':[x['id'] for x in ar],'adj':events(tg,offline(ar,score,nms,orcnn=is_o)),'ctrl':cp,'ctrl_resolved':all(x['resolved'] for x in cp)})
     main={g for g in range(len(groups)) if all(next(r for r in R if r['group']==g and r['detector']==d and r['score']==.25 and r['nms']==.1 and r['level']==0)['adj']['resolved'] for d in models)};P=[r for r in R if r['group'] in main];stat,comp=bootstrap(P,cfg['bootstrap'],cfg['seed'])
     result={'clear_ap50':ap,'acceptance':{'accepted':len(acceptance),'excluded':0},'sample_flow':{'groups':100,'adjacent_images':len(adj_images),'isolated_pool':len(iso),'controls':len(flat),'common_groups':len(main),'common_images':len({groups[x]['image_id'] for x in main}),'components':len(comp),'component_sizes':[len(x) for x in comp]},'smd_before':before,'smd_after':after,'summary':stat,'records':P,'all_records':R,'controls':control}
-    with gzip.open(a.out/'raw_candidates.json.gz','wt') as f:json.dump(raw,f)
+    with gzip.open(a.out/'raw_candidates.json.gz','wt') as f:json.dump(jsonable(raw),f)
     (a.out/'r003_result.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps({'ap50':ap,'flow':result['sample_flow'],'smd':after,'summary':stat},indent=2))
 if __name__=='__main__':main()
