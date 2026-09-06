@@ -32,6 +32,9 @@ def main():
     responsibility = nonzero.get_extra_property('r005_responsibility')
     assert torch.allclose(responsibility.sum(dim=1), torch.ones(3)), 'GT responsibilities must sum to one'
     assert weights[1] < 1, 'near-tie responsibility must be downweighted'
+    no_competition = GaussianRFLEvidenceAssigner(conditioned=True, topk=3, covariance_scale=1., ambiguity_threshold=.1, competition=False)
+    no_competition_result = no_competition.assign(pred, gt, degradation=(3.2, 8.))
+    assert torch.all(no_competition_result.get_extra_property('r005_weights') == 1), 'competition ablation must remove responsibility discount'
     # Assignment support must not alter stored/regressed GT coordinates.
     assert torch.equal(gt.bboxes.tensor, torch.tensor([[0.,0.,8.,4.,0.],[5.,0.,8.,4.,0.]]))
     # Every arm receives the same image-level draw when the protocol seed and

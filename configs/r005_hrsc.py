@@ -73,6 +73,7 @@ if method_arm not in ('B1', 'B3', 'B0'):
             rf_scale=1.0, conditioned=conditioned,
             covariance_scale=covariance_scale if method_arm != 'M1_no_condition' else 0.0,
             ambiguity_threshold=ambiguity_threshold if method_arm != 'M1_no_competition' else 0.0,
+            competition=method_arm != 'M1_no_competition',
             fixed_support=1.0 if method_arm == 'M0' else 0.0,
             iou_calculator=dict(type='RBboxOverlaps2D'))))
 

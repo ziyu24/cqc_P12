@@ -163,7 +163,8 @@ class GaussianRFLEvidenceAssigner(BaseAssigner):
     """
     def __init__(self, topk=(6, 1), rf_scale=1.0, conditioned=False,
                  covariance_scale=1.0, ambiguity_threshold=0.1,
-                 fixed_support=0.0, iou_calculator: ConfigType=dict(type='RBboxOverlaps2D')):
+                 fixed_support=0.0, competition=True,
+                 iou_calculator: ConfigType=dict(type='RBboxOverlaps2D')):
         # RFLA's published HieAssigner uses the two stages [6, 1].  Keep the
         # argument flexible solely for unit-sized counterexamples.
         self.topk = (int(topk), 1) if isinstance(topk, int) else tuple(map(int, topk))
@@ -172,6 +173,7 @@ class GaussianRFLEvidenceAssigner(BaseAssigner):
         self.covariance_scale = float(covariance_scale)
         self.ambiguity_threshold = float(ambiguity_threshold)
         self.fixed_support = float(fixed_support)
+        self.competition = bool(competition)
         self.iou_calculator = TASK_UTILS.build(iou_calculator)
 
     @staticmethod
@@ -256,7 +258,18 @@ class GaussianRFLEvidenceAssigner(BaseAssigner):
         # Lower Gaussian distance is better.  A point owns only the instance
         # with the greatest normalized responsibility among its candidates.
         masked = costs.masked_fill(~candidate, float('inf'))
-        best_cost, owner = masked.min(dim=1)
+        if self.competition:
+            # Full M1: a candidate's normalized Gaussian responsibility picks
+            # its sole owner (equivalent to minimum distance, but explicit).
+            owner = responsibility.masked_fill(~candidate, -float('inf')).argmax(dim=1)
+            best_cost = masked.gather(1, owner[:, None]).squeeze(1)
+        else:
+            # Ablation: retain the exact support candidates but replace M1's
+            # responsibility competition with the detector's conventional
+            # small-object preference for collisions.
+            box_area = (boxes[:, 2] * boxes[:, 3])[None].expand_as(costs)
+            owner = box_area.masked_fill(~candidate, float('inf')).argmin(dim=1)
+            best_cost = masked.gather(1, owner[:, None]).squeeze(1)
         positive = torch.isfinite(best_cost)
         assigned[positive] = owner[positive] + 1
         labels[positive] = gt_instances.labels[owner[positive]].long()
@@ -268,7 +281,7 @@ class GaussianRFLEvidenceAssigner(BaseAssigner):
             # Ambiguity discount is an M1-only degradation effect.  Thus at
             # sigma=0/factor=1 both its covariance and its extra weights are
             # identically B2, including when a nonzero threshold was selected.
-            if (self.conditioned and extra > 0 and num_gt > 1
+            if (self.competition and self.conditioned and extra > 0 and num_gt > 1
                     and self.ambiguity_threshold > 0):
                 # Gaussian responsibilities are normalized across all GT;
                 # use their top-two separation, not a raw centre-distance.
