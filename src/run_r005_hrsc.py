@@ -66,7 +66,7 @@ def train_and_grid(name: str, arm: str, covariance=1., threshold=.0) -> dict:
     train = ['torchrun', '--standalone', '--nproc_per_node=2', str(MMROTATE/'tools/train.py'), str(CONFIG), '--launcher', 'pytorch']
     log = run(train, env)
     ckpt = checkpoint(ROOT / 'runs/r005/work_dirs' / name)
-    cells = {}
+    cells, expanded_cells = {}, {}
     for sigma, factor in GRID:
         eval_env = env.copy()
         eval_env.update({'R005_EVAL_SIGMA': str(sigma), 'R005_EVAL_FACTOR': str(factor)})
@@ -75,8 +75,20 @@ def train_and_grid(name: str, arm: str, covariance=1., threshold=.0) -> dict:
         if set(values) != {'AP50', 'AP75'}:
             raise RuntimeError(f'missing AP metric for {name} {sigma}/{factor}')
         cells[f'{sigma:g}/{factor}'] = values
-    return {'arm': arm, 'covariance_scale': covariance, 'ambiguity_threshold': threshold,
-            'checkpoint': str(ckpt.relative_to(ROOT)), 'grid': cells}
+        if arm == 'B3':
+            # Keep the CVPR-style expanded-target number separate so neither
+            # selection nor r005's primary original-OBB endpoint can use it.
+            eval_env['R005_EVAL_TARGET'] = 'expanded'
+            output = run([sys.executable, str(MMROTATE/'tools/test.py'), str(CONFIG), str(ckpt), '--launcher', 'none'], eval_env)
+            values = {metric: float(value) for metric, value in AP.findall(output)}
+            if set(values) != {'AP50', 'AP75'}:
+                raise RuntimeError(f'missing expanded AP metric for {name} {sigma}/{factor}')
+            expanded_cells[f'{sigma:g}/{factor}'] = values
+    result = {'arm': arm, 'covariance_scale': covariance, 'ambiguity_threshold': threshold,
+              'checkpoint': str(ckpt.relative_to(ROOT)), 'grid': cells}
+    if expanded_cells:
+        result['expanded_target_grid'] = expanded_cells
+    return result
 
 
 def mean_degraded(result: dict, metric='AP75') -> float:

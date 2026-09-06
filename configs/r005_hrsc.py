@@ -14,6 +14,7 @@ run_root = os.environ.get('R005_WORK_DIR', './runs/r005/work_dirs')
 seed = 5
 eval_sigma = float(os.environ.get('R005_EVAL_SIGMA', '0'))
 eval_factor = int(os.environ.get('R005_EVAL_FACTOR', '1'))
+eval_target = os.environ.get('R005_EVAL_TARGET', 'original')
 covariance_scale = float(os.environ.get('R005_COVARIANCE_SCALE', '1.0'))
 ambiguity_threshold = float(os.environ.get('R005_AMBIGUITY_THRESHOLD', '0.1'))
 per_gpu_batch = int(os.environ.get('R005_PER_GPU_BATCH', '2'))
@@ -51,6 +52,10 @@ val_dataloader = dict(dataset=dict(data_root=dataset_root + '/', ann_file='split
         dict(type='ConvertBoxType', box_type_mapping=dict(gt_bboxes='rbox')),
         # Match the training coordinate system: resize first, then degrade.
         dict(type='FixedGaussianDownsample', sigma=eval_sigma, factor=eval_factor),
+        # B3's paper-style score uses the same degradation-dependent expanded
+        # target.  The r005 primary score never takes this branch.
+        *([dict(type='BlurBoxExpansion', support_scale=1.0)]
+          if method_arm == 'B3' and eval_target == 'expanded' else []),
         dict(type='mmdet.Pad', size=(800,800), pad_val=dict(img=(114,114,114))),
         dict(type='mmdet.PackDetInputs', meta_keys=('img_id','img_path','ori_shape','img_shape','scale_factor','r005_degradation'))]))
 test_dataloader = val_dataloader
