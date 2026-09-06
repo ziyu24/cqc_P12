@@ -103,8 +103,14 @@ def controls(groups,iso,cg,ci):
     demand=[(i,m) for i,g in enumerate(groups) for m in g['members']]; ref=np.asarray([v for x in cg.values() for v in x.values()]+ci);mu=ref.mean(0);sd=ref.std(0);sd[sd==0]=1;opts=[]
     for d,(gi,m) in enumerate(demand):
         for ii in range(len(iso)):opts.append((d,ii,float(np.square((np.asarray(cg[gi][m])-np.asarray(ci[ii]))/sd).sum())))
-    images=sorted({x['image_id'] for x in iso});im={x:i for i,x in enumerate(images)};R=len(demand)+len(iso)+len(images);A=lil_matrix((R,len(opts)));lo=np.full(R,-np.inf);hi=np.ones(R);lo[:len(demand)]=1;hi[:len(demand)]=1
-    for k,(d,i,_) in enumerate(opts):A[d,k]=1;A[len(demand)+i,k]=1;A[len(demand)+len(iso)+im[iso[i]['image_id']],k]=1
+    images=sorted({x['image_id'] for x in iso});im={x:i for i,x in enumerate(images)};R=len(demand)+len(iso)+len(images);A=lil_matrix((R+4,len(opts)));lo=np.full(R+4,-np.inf);hi=np.ones(R+4);lo[:len(demand)]=1;hi[:len(demand)]=1
+    # The earlier nearest-pair objective could still drift the aggregate short
+    # side distribution.  Constrain each selected-control total to the target
+    # total (within .05 target SD); final pooled-SMD remains the hard check.
+    target=np.asarray([cg[g][m] for g,m in demand]);tol=.05*np.maximum(target.std(0),1e-9)*len(demand)
+    lo[R:]=target.sum(0)-tol;hi[R:]=target.sum(0)+tol
+    for k,(d,i,_) in enumerate(opts):
+        A[d,k]=1;A[len(demand)+i,k]=1;A[len(demand)+len(iso)+im[iso[i]['image_id']],k]=1;A[R:,k]=ci[i]
     z=milp(c=np.array([x[2] for x in opts]),integrality=np.ones(len(opts)),bounds=Bounds(0,1),constraints=LinearConstraint(A.tocsr(),lo,hi),options={'time_limit':300})
     if not z.success:raise RuntimeError(z.message)
     use={d:iso[i] for (d,i,_),v in zip(opts,z.x) if v>.5};off=0;out=[]
