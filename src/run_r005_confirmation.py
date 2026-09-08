@@ -77,7 +77,13 @@ def main():
                 env, work = environment(dataset, key, seed, epoch)
                 if dataset == 'hrsc': env.update({'R005_HRSC_TRAIN_SPLIT':'trainval','R005_HRSC_EVAL_SPLIT':'test'})
                 config = ROOT / ('configs/r005_confirmation.py' if dataset == 'hrsc' else 'configs/r005_confirmation_dota.py')
-                invoke(['torchrun','--standalone','--nproc_per_node=2',str(MMROTATE/'tools/train.py'),str(config),'--launcher','pytorch'], env)
+                # A failed post-training evaluation may be safely retried from
+                # the frozen HRSC epoch checkpoint.  Never reuse DOTA's
+                # validation-selected checkpoints, whose selection must run
+                # with the current training attempt.
+                frozen = work / f'epoch_{epoch}.pth' if dataset == 'hrsc' else None
+                if frozen is None or not frozen.is_file():
+                    invoke(['torchrun','--standalone','--nproc_per_node=2',str(MMROTATE/'tools/train.py'),str(config),'--launcher','pytorch'], env)
                 ckpt = checkpoint(work, epoch if dataset == 'hrsc' else None)
                 grid, expanded = evaluate(env, ckpt, key == 'B3')
                 results[name] = {'dataset':dataset,'arm':key,'seed':seed,'checkpoint':str(ckpt.relative_to(ROOT)), 'grid':grid,

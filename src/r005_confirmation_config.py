@@ -77,7 +77,8 @@ def build_confirmation(dataset: str) -> dict:
         # Do not inherit the registered recipe's save_best hook: the test
         # checkpoint is frozen by development epoch, never selected on test.
         values['default_hooks'] = dict(checkpoint=dict(
-            _delete_=True, interval=1, max_keep_ckpts=fixed_epoch, save_last=True))
+            _delete_=True, type='CheckpointHook', interval=1,
+            max_keep_ckpts=fixed_epoch, save_last=True))
     else:
         values['default_hooks'] = dict(checkpoint=dict(interval=1, max_keep_ckpts=1, save_best='r005/AP75', rule='greater'))
     return values
