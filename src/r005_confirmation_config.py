@@ -74,7 +74,10 @@ def build_confirmation(dataset: str) -> dict:
         # Test selection is frozen to the development epoch for each arm, so
         # training beyond that epoch cannot affect the selected checkpoint.
         values['train_cfg'] = dict(max_epochs=fixed_epoch, type='EpochBasedTrainLoop', val_interval=999)
-        values['default_hooks'] = dict(checkpoint=dict(interval=1, max_keep_ckpts=fixed_epoch, save_last=True))
+        # Do not inherit the registered recipe's save_best hook: the test
+        # checkpoint is frozen by development epoch, never selected on test.
+        values['default_hooks'] = dict(checkpoint=dict(
+            _delete_=True, interval=1, max_keep_ckpts=fixed_epoch, save_last=True))
     else:
         values['default_hooks'] = dict(checkpoint=dict(interval=1, max_keep_ckpts=1, save_best='r005/AP75', rule='greater'))
     return values
