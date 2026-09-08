@@ -1,0 +1,13 @@
+{
+  "purpose": "Pre-fixed HRSC r005 confirmation illustrations; never selected from prediction or metric outputs.",
+  "selection": {
+    "population": "HRSC2016 official test split (453 original images)",
+    "rule": "ascending SHA-256 of UTF-8 string r005-visual-v1:<image_id>; retain first 12",
+    "degradation": {"sigma": 3.2, "factor": 8},
+    "prediction_source": "hrsc/M1/seed17 original-OBB per-image record"
+  },
+  "image_ids": [
+    "100000735", "100001152", "100001059", "100001562", "100001186", "100001244",
+    "100000747", "100001369", "100001549", "100001339", "100001636", "100001567"
+  ]
+}
