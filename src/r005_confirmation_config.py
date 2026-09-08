@@ -49,8 +49,12 @@ def build_confirmation(dataset: str) -> dict:
                      dict(type='mmdet.Pad', size=(image_size,image_size), pad_val=dict(img=(114,114,114))), pack]
     values = dict(work_dir=work_dir, custom_imports=dict(imports=['src.r005_components'], allow_failed_imports=False),
         train_dataloader=dict(_delete_=True, batch_size=per_gpu_batch, num_workers=4, persistent_workers=True, pin_memory=True,
-            dataset=dict(type=dataset_type, data_root=data_root+'/', ann_file=train_ann, data_prefix=train_prefix,
-                         filter_cfg=dict(filter_empty_gt=True), pipeline=pipeline, **train_extra)),
+            # Keep the development protocol's three deterministic visits per
+            # source image.  The wrapper exposes r005_draw_index, so each
+            # visit receives its shared, seed-fixed image degradation.
+            dataset=dict(type='R005RepeatDataset', times=3, dataset=dict(
+                type=dataset_type, data_root=data_root+'/', ann_file=train_ann, data_prefix=train_prefix,
+                filter_cfg=dict(filter_empty_gt=True), pipeline=pipeline, **train_extra))),
         val_dataloader=dict(_delete_=True, batch_size=per_gpu_batch, num_workers=4, persistent_workers=True, pin_memory=True,
             sampler=dict(type='DefaultSampler', shuffle=False), dataset=dict(type=dataset_type, data_root=data_root+'/',
                 ann_file=eval_ann, data_prefix=eval_prefix, pipeline=eval_pipeline, test_mode=True, **eval_extra)),
