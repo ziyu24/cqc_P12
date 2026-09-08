@@ -11,7 +11,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MMROTATE = Path('/home/rspip/zy/study/third_party/ai4rs')
-CONFIG = ROOT / 'configs/r005_confirmation.py'
 OUT = ROOT / 'runs/r005/artifacts/r005_confirmation.json'
 GRID = [(s, f) for s in (0., .8, 1.6, 3.2) for f in (1, 2, 4, 8)]
 AP = re.compile(r'r005/(AP50|AP75|AR100):\s*([0-9.]+)')
@@ -49,13 +48,14 @@ def evaluate(env, ckpt, b3):
     grid, expanded = {}, {}
     for sigma, factor in GRID:
         e = env.copy(); e.update({'R005_EVAL_SIGMA':str(sigma), 'R005_EVAL_FACTOR':str(factor)})
-        out = invoke([sys.executable, str(MMROTATE/'tools/test.py'), str(CONFIG), str(ckpt), '--launcher','none'], e)
+        config = ROOT / ('configs/r005_confirmation.py' if e['R005_DATASET'] == 'hrsc' else 'configs/r005_confirmation_dota.py')
+        out = invoke([sys.executable, str(MMROTATE/'tools/test.py'), str(config), str(ckpt), '--launcher','none'], e)
         metrics = {m:float(v) for m,v in AP.findall(out)}
         if set(metrics) != {'AP50','AP75','AR100'}: raise RuntimeError(f'missing primary metrics {sigma}/{factor}')
         grid[f'{sigma:g}/{factor}'] = metrics
         if b3:
             e['R005_EVAL_TARGET'] = 'expanded'
-            out = invoke([sys.executable, str(MMROTATE/'tools/test.py'), str(CONFIG), str(ckpt), '--launcher','none'], e)
+            out = invoke([sys.executable, str(MMROTATE/'tools/test.py'), str(config), str(ckpt), '--launcher','none'], e)
             metrics = {m:float(v) for m,v in AP.findall(out)}
             if set(metrics) != {'AP50','AP75','AR100'}: raise RuntimeError(f'missing expanded metrics {sigma}/{factor}')
             expanded[f'{sigma:g}/{factor}'] = metrics
@@ -70,7 +70,8 @@ def main():
                 if name in results: continue
                 env, work = environment(dataset, key, seed, epoch)
                 if dataset == 'hrsc': env.update({'R005_HRSC_TRAIN_SPLIT':'trainval','R005_HRSC_EVAL_SPLIT':'test'})
-                invoke(['torchrun','--standalone','--nproc_per_node=2',str(MMROTATE/'tools/train.py'),str(CONFIG),'--launcher','pytorch'], env)
+                config = ROOT / ('configs/r005_confirmation.py' if dataset == 'hrsc' else 'configs/r005_confirmation_dota.py')
+                invoke(['torchrun','--standalone','--nproc_per_node=2',str(MMROTATE/'tools/train.py'),str(config),'--launcher','pytorch'], env)
                 ckpt = checkpoint(work, epoch if dataset == 'hrsc' else None)
                 grid, expanded = evaluate(env, ckpt, key == 'B3')
                 results[name] = {'dataset':dataset,'arm':key,'seed':seed,'checkpoint':str(ckpt.relative_to(ROOT)), 'grid':grid,
