@@ -13,6 +13,7 @@ def build_confirmation(dataset: str) -> dict:
     covariance_scale = float(os.environ.get('R005_COVARIANCE_SCALE', '.5'))
     ambiguity_threshold = float(os.environ.get('R005_AMBIGUITY_THRESHOLD', '.2'))
     per_gpu_batch = int(os.environ.get('R005_PER_GPU_BATCH', '1'))
+    fixed_epoch = int(os.environ.get('R005_FIXED_EPOCH', '36'))
     if dataset == 'hrsc':
         data_root, dataset_type, image_size = '/home/rspip/zy/data/dataset/HRSC2016', 'HRSCDataset', 800
         train_ann = f"splits/{os.environ.get('R005_HRSC_TRAIN_SPLIT', 'trainval')}.txt"
@@ -65,8 +66,10 @@ def build_confirmation(dataset: str) -> dict:
             ambiguity_threshold=ambiguity_threshold if method_arm == 'M1' else 0., competition=method_arm == 'M1',
             fixed_support=0., iou_calculator=dict(type='RBboxOverlaps2D'))))
     if dataset == 'hrsc':
-        values['train_cfg'] = dict(max_epochs=36, type='EpochBasedTrainLoop', val_interval=999)
-        values['default_hooks'] = dict(checkpoint=dict(interval=1, max_keep_ckpts=36, save_last=True))
+        # Test selection is frozen to the development epoch for each arm, so
+        # training beyond that epoch cannot affect the selected checkpoint.
+        values['train_cfg'] = dict(max_epochs=fixed_epoch, type='EpochBasedTrainLoop', val_interval=999)
+        values['default_hooks'] = dict(checkpoint=dict(interval=1, max_keep_ckpts=fixed_epoch, save_last=True))
     else:
         values['default_hooks'] = dict(checkpoint=dict(interval=1, max_keep_ckpts=1, save_best='r005/AP75', rule='greater'))
     return values
