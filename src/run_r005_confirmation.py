@@ -16,6 +16,7 @@ GRID = [(s, f) for s in (0., .8, 1.6, 3.2) for f in (1, 2, 4, 8)]
 AP = re.compile(r'r005/(AP50|AP75|AR100):\s*([0-9.]+)')
 ARMS = {'B1': ('B1', 1), 'B2': ('B2', 35), 'B3': ('B3', 1), 'M1': ('M1', 36)}
 SEEDS = (17, 29, 43)
+SAMPLER_PROVENANCE = 'DefaultSampler(shuffle=True), distributed rank sharding'
 
 def invoke(argv, env):
     done = subprocess.run(argv, cwd=ROOT, env=env, text=True, stdout=subprocess.PIPE,
@@ -73,7 +74,13 @@ def main():
         for seed in SEEDS:
             for key, (_, epoch) in ARMS.items():
                 name = f'{dataset}/{key}/seed{seed}'
-                if name in results: continue
+                # Results generated before the confirmation loader explicitly
+                # restored DefaultSampler were unsharded under DDP, doubling
+                # optimizer steps per epoch.  They remain on disk for audit
+                # but cannot satisfy this frozen confirmation protocol.
+                if name in results and results[name].get('sampler_provenance') == SAMPLER_PROVENANCE:
+                    continue
+                results.pop(name, None)
                 env, work = environment(dataset, key, seed, epoch)
                 if dataset == 'hrsc': env.update({'R005_HRSC_TRAIN_SPLIT':'trainval','R005_HRSC_EVAL_SPLIT':'test'})
                 config = ROOT / ('configs/r005_confirmation.py' if dataset == 'hrsc' else 'configs/r005_confirmation_dota.py')
@@ -85,7 +92,8 @@ def main():
                     invoke(['torchrun','--standalone','--nproc_per_node=2',str(MMROTATE/'tools/train.py'),str(config),'--launcher','pytorch'], env)
                 ckpt = checkpoint(work, epoch)
                 grid, expanded = evaluate(env, ckpt, key == 'B3')
-                results[name] = {'dataset':dataset,'arm':key,'seed':seed,'checkpoint':str(ckpt.relative_to(ROOT)), 'grid':grid,
+                results[name] = {'dataset':dataset,'arm':key,'seed':seed,'checkpoint':str(ckpt.relative_to(ROOT)),
+                                 'sampler_provenance': SAMPLER_PROVENANCE, 'grid':grid,
                                  **({'expanded_target_grid':expanded} if expanded else {})}
                 OUT.parent.mkdir(parents=True, exist_ok=True)
                 OUT.write_text(json.dumps(results, indent=2)+'\n')
