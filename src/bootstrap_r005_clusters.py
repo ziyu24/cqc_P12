@@ -3,7 +3,8 @@
 The r005 evaluator writes a pickle with GT/prediction pairs per evaluation
 image.  This utility reproduces its area-AP@.75 calculation from those pairs,
 but samples original-image clusters (all DOTA tiles sharing ``__`` prefix) as
-the independent unit.  A draw is shared by the two arms and every seed.
+the independent unit.  One draw sequence is shared by every arm, seed, and
+the complete 15-cell degraded grid, as fixed in the r005 protocol.
 """
 from __future__ import annotations
 
@@ -17,6 +18,7 @@ from mmdet.evaluation.functional import average_precision
 from mmrotate.evaluation.functional.mean_ap import tpfp_default
 
 GRID = [(sigma, factor) for sigma in (0., .8, 1.6, 3.2) for factor in (1, 2, 4, 8)]
+SAMPLER_PROVENANCE = 'DefaultSampler(shuffle=True), distributed rank sharding'
 
 
 def cluster_id(pred: dict, dataset: str) -> str:
@@ -59,12 +61,14 @@ def _ap75(records: list[tuple[dict, dict]], classes: tuple[str, ...]) -> float:
     return float(np.mean(aps)) if aps else 0.
 
 
-def paired_delta(left: Path, right: Path, dataset: str, draws: list[np.ndarray]) -> np.ndarray:
+def paired_delta(left: Path, right: Path, dataset: str, draws: list[np.ndarray],
+                 expected_clusters: tuple[str, ...]) -> np.ndarray:
     left_classes, left_groups = load_clusters(left, dataset)
     right_classes, right_groups = load_clusters(right, dataset)
-    if left_classes != right_classes or tuple(left_groups) != tuple(right_groups):
-        raise ValueError(f'paired records differ: {left} vs {right}')
     clusters = tuple(left_groups)
+    if (left_classes != right_classes or clusters != tuple(right_groups)
+            or clusters != expected_clusters):
+        raise ValueError(f'paired records differ: {left} vs {right}')
     values = []
     for draw in draws:
         chosen = [clusters[index] for index in draw]
@@ -87,10 +91,18 @@ def main() -> None:
     parser.add_argument('--seeds', nargs='+', type=int, default=(17, 29, 43))
     parser.add_argument('--replicates', type=int, default=1000)
     parser.add_argument('--seed', type=int, default=20260907)
+    parser.add_argument('--summary', type=Path, required=True,
+                        help='confirmation summary used to reject unsharded records')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    confirmed = json.loads(args.summary.read_text())
+    for seed in args.seeds:
+        for arm in (args.left, args.right):
+            name = f'{args.dataset}/{arm}/seed{seed}'
+            if confirmed.get(name, {}).get('sampler_provenance') != SAMPLER_PROVENANCE:
+                raise ValueError(f'unsharded or unknown confirmation provenance: {name}')
     rng = np.random.default_rng(args.seed)
-    per_seed, draws_by_cell = [], {}
+    per_seed, shared_clusters, shared_draws = [], None, None
     for seed in args.seeds:
         cell_deltas = []
         for sigma, factor in GRID:
@@ -99,11 +111,14 @@ def main() -> None:
             left = record_path(args.root, args.dataset, args.left, seed, sigma, factor)
             right = record_path(args.root, args.dataset, args.right, seed, sigma, factor)
             _, groups = load_clusters(left, args.dataset)
-            key = (sigma, factor)
-            if key not in draws_by_cell:
-                draws_by_cell[key] = [np.arange(len(groups), dtype=int)] + [
-                    rng.integers(0, len(groups), len(groups)) for _ in range(args.replicates)]
-            cell_deltas.append(paired_delta(left, right, args.dataset, draws_by_cell[key]))
+            clusters = tuple(groups)
+            if shared_clusters is None:
+                shared_clusters = clusters
+                shared_draws = [np.arange(len(clusters), dtype=int)] + [
+                    rng.integers(0, len(clusters), len(clusters)) for _ in range(args.replicates)]
+            elif clusters != shared_clusters:
+                raise ValueError(f'cluster identity/order differs at {left}')
+            cell_deltas.append(paired_delta(left, right, args.dataset, shared_draws, shared_clusters))
         per_seed.append(np.mean(cell_deltas, axis=0))
     per_seed = np.asarray(per_seed)
     mean = per_seed.mean(axis=0)
