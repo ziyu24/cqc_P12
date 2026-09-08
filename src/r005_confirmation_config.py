@@ -70,15 +70,11 @@ def build_confirmation(dataset: str) -> dict:
             topk=(6,1), rf_scale=1.0, conditioned=method_arm == 'M1', covariance_scale=covariance_scale,
             ambiguity_threshold=ambiguity_threshold if method_arm == 'M1' else 0., competition=method_arm == 'M1',
             fixed_support=0., iou_calculator=dict(type='RBboxOverlaps2D'))))
-    if dataset == 'hrsc':
-        # Test selection is frozen to the development epoch for each arm, so
-        # training beyond that epoch cannot affect the selected checkpoint.
-        values['train_cfg'] = dict(max_epochs=fixed_epoch, type='EpochBasedTrainLoop', val_interval=999)
-        # Do not inherit the registered recipe's save_best hook: the test
-        # checkpoint is frozen by development epoch, never selected on test.
-        values['default_hooks'] = dict(checkpoint=dict(
-            _delete_=True, type='CheckpointHook', interval=1,
-            max_keep_ckpts=fixed_epoch, save_last=True))
-    else:
-        values['default_hooks'] = dict(checkpoint=dict(interval=1, max_keep_ckpts=1, save_best='r005/AP75', rule='greater'))
+    # Both confirmation datasets use the arm-specific epoch fixed during HRSC
+    # development.  In particular, DOTA val is the independent confirmation
+    # endpoint and must not also choose a best checkpoint.
+    values['train_cfg'] = dict(max_epochs=fixed_epoch, type='EpochBasedTrainLoop', val_interval=999)
+    values['default_hooks'] = dict(checkpoint=dict(
+        _delete_=True, type='CheckpointHook', interval=1,
+        max_keep_ckpts=fixed_epoch, save_last=True))
     return values
