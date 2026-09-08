@@ -47,15 +47,16 @@ def build_confirmation(dataset: str) -> dict:
                      *([dict(type='BlurBoxExpansion', support_scale=1.0)] if method_arm == 'B3' and eval_target == 'expanded' else []),
                      dict(type='mmdet.Pad', size=(image_size,image_size), pad_val=dict(img=(114,114,114))), pack]
     values = dict(work_dir=work_dir, custom_imports=dict(imports=['src.r005_components'], allow_failed_imports=False),
-        train_dataloader=dict(batch_size=per_gpu_batch, num_workers=4, persistent_workers=True, pin_memory=True,
+        train_dataloader=dict(_delete_=True, batch_size=per_gpu_batch, num_workers=4, persistent_workers=True, pin_memory=True,
             dataset=dict(type=dataset_type, data_root=data_root+'/', ann_file=train_ann, data_prefix=train_prefix,
                          filter_cfg=dict(filter_empty_gt=True), pipeline=pipeline, **train_extra)),
-        val_dataloader=dict(batch_size=per_gpu_batch, num_workers=4, persistent_workers=True, pin_memory=True,
+        val_dataloader=dict(_delete_=True, batch_size=per_gpu_batch, num_workers=4, persistent_workers=True, pin_memory=True,
             sampler=dict(type='DefaultSampler', shuffle=False), dataset=dict(type=dataset_type, data_root=data_root+'/',
                 ann_file=eval_ann, data_prefix=eval_prefix, pipeline=eval_pipeline, test_mode=True, **eval_extra)),
         val_evaluator=[dict(type='R005DOTAMetric', metric='mAP', eval_mode='area', iou_thrs=[.5,.75], prefix='r005')],
         randomness=dict(seed=seed, deterministic=False))
-    values['test_dataloader'] = values['val_dataloader']
+    values['test_dataloader'] = dict(values['val_dataloader'],
+                                     dataset=dict(values['val_dataloader']['dataset']))
     values['test_evaluator'] = values['val_evaluator']
     if method_arm not in ('B1', 'B3'):
         values['model'] = dict(bbox_head=dict(type='EvidenceRotatedRTMDetSepBNHead'), train_cfg=dict(
