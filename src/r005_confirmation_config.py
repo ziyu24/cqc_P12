@@ -58,7 +58,8 @@ def build_confirmation(dataset: str) -> dict:
         val_dataloader=dict(_delete_=True, batch_size=per_gpu_batch, num_workers=4, persistent_workers=True, pin_memory=True,
             sampler=dict(type='DefaultSampler', shuffle=False), dataset=dict(type=dataset_type, data_root=data_root+'/',
                 ann_file=eval_ann, data_prefix=eval_prefix, pipeline=eval_pipeline, test_mode=True, **eval_extra)),
-        val_evaluator=[dict(type='R005DOTAMetric', metric='mAP', eval_mode='area', iou_thrs=[.5,.75], prefix='r005')],
+        val_evaluator=[dict(type='R005DOTAMetric', metric='mAP', eval_mode='area', iou_thrs=[.5,.75], prefix='r005',
+                            dump_path=os.environ.get('R005_DUMP_PATH') or None)],
         randomness=dict(seed=seed, deterministic=False))
     values['test_dataloader'] = dict(values['val_dataloader'],
                                      dataset=dict(values['val_dataloader']['dataset']))

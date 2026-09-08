@@ -49,15 +49,21 @@ def evaluate(env, ckpt, b3):
     for sigma, factor in GRID:
         e = env.copy(); e.update({'R005_EVAL_SIGMA':str(sigma), 'R005_EVAL_FACTOR':str(factor)})
         config = ROOT / ('configs/r005_confirmation.py' if e['R005_DATASET'] == 'hrsc' else 'configs/r005_confirmation_dota.py')
+        raw_root = Path(e['R005_WORK_DIR']) / 'per_image'
+        raw_root.mkdir(parents=True, exist_ok=True)
+        e['R005_DUMP_PATH'] = str(raw_root / f'sigma{sigma:g}_factor{factor}_original.pkl')
         out = invoke([sys.executable, str(MMROTATE/'tools/test.py'), str(config), str(ckpt), '--launcher','none'], e)
         metrics = {m:float(v) for m,v in AP.findall(out)}
         if set(metrics) != {'AP50','AP75','AR100'}: raise RuntimeError(f'missing primary metrics {sigma}/{factor}')
+        if not Path(e['R005_DUMP_PATH']).is_file(): raise RuntimeError(f'missing per-image output {e["R005_DUMP_PATH"]}')
         grid[f'{sigma:g}/{factor}'] = metrics
         if b3:
             e['R005_EVAL_TARGET'] = 'expanded'
+            e['R005_DUMP_PATH'] = str(raw_root / f'sigma{sigma:g}_factor{factor}_expanded.pkl')
             out = invoke([sys.executable, str(MMROTATE/'tools/test.py'), str(config), str(ckpt), '--launcher','none'], e)
             metrics = {m:float(v) for m,v in AP.findall(out)}
             if set(metrics) != {'AP50','AP75','AR100'}: raise RuntimeError(f'missing expanded metrics {sigma}/{factor}')
+            if not Path(e['R005_DUMP_PATH']).is_file(): raise RuntimeError(f'missing per-image output {e["R005_DUMP_PATH"]}')
             expanded[f'{sigma:g}/{factor}'] = metrics
     return grid, expanded
 

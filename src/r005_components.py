@@ -7,7 +7,10 @@ zero-degradation 分支与 B2 相同，因而 M1 在零退化严格退化为 B2�
 from __future__ import annotations
 
 import math
+import os
+import pickle
 from typing import Optional
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -350,6 +353,10 @@ class R005DOTAMetric(DOTAMetric):
     thresholds .50:.05:.95, of GT-count-weighted class recall.  The existing
     DOTAMetric AP50/AP75 computation remains the primary OBB metric.
     """
+    def __init__(self, *args, dump_path: str | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dump_path = Path(dump_path) if dump_path else None
+
     def compute_metrics(self, results: list) -> dict:
         metrics = super().compute_metrics(results)
         gts, preds = zip(*results)
@@ -374,4 +381,14 @@ class R005DOTAMetric(DOTAMetric):
                                if item['recall'].size else 0.)
                                for item in per_class) / total_gt)
         metrics['AR100'] = round(float(np.mean(recalls)) if recalls else 0., 3)
+        if self.dump_path is not None:
+            # The full per-image GT/prediction pairs are needed for the
+            # preregistered shared-cluster bootstrap.  Dump only on the
+            # explicit evaluation path, never during periodic validation.
+            self.dump_path.parent.mkdir(parents=True, exist_ok=True)
+            temporary = self.dump_path.with_suffix(self.dump_path.suffix + '.tmp')
+            with temporary.open('wb') as handle:
+                pickle.dump({'classes': tuple(self.dataset_meta['classes']),
+                             'results': results}, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            os.replace(temporary, self.dump_path)
         return metrics
