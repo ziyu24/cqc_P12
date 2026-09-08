@@ -24,6 +24,7 @@ GRID = [(sigma, factor) for sigma in (0., .8, 1.6, 3.2) for factor in (1, 2, 4, 
 FP_BUDGETS = (1, 5, 10)
 SCALE_BINS = (("small", 0., 32.), ("medium", 32., 96.), ("large", 96., float("inf")))
 DISTANCE_BINS = (("near", 0., 1.), ("mid", 1., 2.), ("far", 2., float("inf")))
+SAMPLER_PROVENANCE = "DefaultSampler(shuffle=True), distributed rank sharding"
 
 
 def load(path: Path):
@@ -143,6 +144,8 @@ def main():
               "scale_sqrt_area_pixels": SCALE_BINS, "nearest_center_distance_over_sqrt_area": DISTANCE_BINS}, "entries": {}}
     for name, item in confirmed.items():
         if selected and name not in selected: continue
+        if item.get("sampler_provenance") != SAMPLER_PROVENANCE:
+            raise ValueError(f"unsharded or unknown confirmation provenance: {name}")
         dataset, arm, seed_text = name.split("/"); seed = int(seed_text.removeprefix("seed"))
         cells = {}
         for sigma, factor in GRID:
