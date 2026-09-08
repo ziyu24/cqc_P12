@@ -89,11 +89,14 @@ def support_points(boxes: np.ndarray, shape: tuple[int, int], sigma: float, fact
     responsibility = exp / exp.sum(axis=1, keepdims=True)
     owner = np.argmax(np.where(first, responsibility, -np.inf), axis=1)
     positive = np.isfinite(np.take_along_axis(np.where(first, costs, np.inf), owner[:, None], axis=1)[:, 0])
-    top = np.partition(responsibility, -2, axis=1)[:, -2:]
-    margin = top[:, 1] - top[:, 0]
     weights = np.ones(len(points), dtype=float)
-    ambiguous = positive & (margin < ambiguity_threshold)
-    weights[ambiguous] = np.clip(margin[ambiguous] / ambiguity_threshold, 0., 1.)
+    # A single GT has no competing responsibility, matching the production
+    # assigner's ``num_gt > 1`` guard for the ambiguity discount.
+    if len(boxes) > 1:
+        top = np.partition(responsibility, -2, axis=1)[:, -2:]
+        margin = top[:, 1] - top[:, 0]
+        ambiguous = positive & (margin < ambiguity_threshold)
+        weights[ambiguous] = np.clip(margin[ambiguous] / ambiguity_threshold, 0., 1.)
     return points[positive], weights[positive], owner[positive]
 
 
