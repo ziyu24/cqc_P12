@@ -8,6 +8,7 @@ the frozen 4x4 degradation grid; B3 additionally keeps its expanded target.
 from __future__ import annotations
 
 import json, math, os, re, subprocess, sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,8 +49,8 @@ def audit_dota_inputs():
         missing_ann, missing_image = sorted(set(image_by_id) - set(ann_by_id)), sorted(set(ann_by_id) - set(image_by_id))
         if missing_ann or missing_image:
             raise RuntimeError(f'DOTA {split} image/annotation coverage mismatch: missing_ann={missing_ann[:3]} missing_image={missing_image[:3]}')
-        boxes = 0
-        for tile_id, ann in ann_by_id.items():
+        def count_valid_boxes(ann):
+            count = 0
             for line_no, line in enumerate(ann.read_text().splitlines(), 1):
                 fields = line.split()
                 if len(fields) != 10 or fields[8] not in DOTA_CLASSES:
@@ -61,7 +62,13 @@ def audit_dota_inputs():
                     raise RuntimeError(f'non-numeric DOTA annotation {ann}:{line_no}') from exc
                 if not all(math.isfinite(v) for v in coordinates) or difficulty not in (0, 1, 2):
                     raise RuntimeError(f'invalid DOTA geometry/difficulty {ann}:{line_no}')
-                boxes += 1
+                count += 1
+            return count
+        # These are independent, immutable text files on shared storage.  A
+        # bounded pool retains whole-corpus validation while avoiding one
+        # network round trip per file in sequence.
+        with ThreadPoolExecutor(max_workers=16) as pool:
+            boxes = sum(pool.map(count_valid_boxes, ann_by_id.values()))
         splits[split] = {'tiles': len(image_by_id), 'boxes': boxes,
                          'original_ids': {tile_id.split('__', 1)[0] for tile_id in image_by_id}}
     crossing = sorted(splits['train']['original_ids'] & splits['val']['original_ids'])
