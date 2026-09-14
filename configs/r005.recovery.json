@@ -1,0 +1,31 @@
+{
+  "task": "r005",
+  "project": "P12",
+  "source": "src/run_r005_confirmation.py",
+  "config_entries": [
+    "configs/r005_confirmation.py",
+    "configs/r005_confirmation_dota.py"
+  ],
+  "command": [
+    "/home/rspip/miniconda3/envs/d3/bin/python",
+    "src/run_r005_confirmation.py"
+  ],
+  "inputs": {
+    "hrsc": "/home/rspip/zy/data/dataset/HRSC2016",
+    "dota": "/home/rspip/zy/data/dataset/dota/dota1.0/split_ss_dota10"
+  },
+  "outputs": [
+    "runs/r005/artifacts/r005_confirmation.json",
+    "runs/r005/confirmation"
+  ],
+  "scope": {
+    "hrsc_seeds": [17, 29, 43],
+    "dota_seeds": [17],
+    "dota_cancelled_before_start": {
+      "seeds": [29, 43],
+      "arms": ["B1", "B2", "B3", "M1"],
+      "authorized_on": "2026-09-14"
+    }
+  },
+  "rebuild": "After the active pre-change worker reaches its frozen B2 epoch-35 checkpoint, restart the same r005 with cqc-run run start --run r005 --command /home/rspip/miniconda3/envs/d3/bin/python src/run_r005_confirmation.py. Existing exact checkpoints and completed grids are reused; the committed runner audits DOTA inputs and schedules only seed 17."
+}
