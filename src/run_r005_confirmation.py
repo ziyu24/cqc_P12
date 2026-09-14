@@ -1,7 +1,8 @@
 """Run the frozen r005 post-development confirmation matrix.
 
 HRSC: B1/B2/B3/M1 on trainval->test, seeds 17/29/43, fixed development
-epochs. DOTA: same arms and seeds on train->val.  All evaluation cells use
+epochs. DOTA: the same arms on train->val for seed 17 only; the user
+cancelled the not-yet-started seed-29/43 DOTA arms.  All evaluation cells use
 the frozen 4x4 degradation grid; B3 additionally keeps its expanded target.
 """
 from __future__ import annotations
@@ -15,7 +16,8 @@ OUT = ROOT / 'runs/r005/artifacts/r005_confirmation.json'
 GRID = [(s, f) for s in (0., .8, 1.6, 3.2) for f in (1, 2, 4, 8)]
 AP = re.compile(r'r005/(AP50|AP75|AR100):\s*([0-9.]+)')
 ARMS = {'B1': ('B1', 1), 'B2': ('B2', 35), 'B3': ('B3', 1), 'M1': ('M1', 36)}
-SEEDS = (17, 29, 43)
+HRSC_SEEDS = (17, 29, 43)
+DOTA_SEEDS = (17,)
 SAMPLER_PROVENANCE = 'DefaultSampler(shuffle=True), distributed rank sharding'
 
 def invoke(argv, env):
@@ -70,8 +72,8 @@ def evaluate(env, ckpt, b3):
 
 def main():
     results = json.loads(OUT.read_text()) if OUT.exists() else {}
-    for dataset in ('hrsc','dota'):
-        for seed in SEEDS:
+    for dataset, seeds in (('hrsc', HRSC_SEEDS), ('dota', DOTA_SEEDS)):
+        for seed in seeds:
             for key, (_, epoch) in ARMS.items():
                 name = f'{dataset}/{key}/seed{seed}'
                 # Results generated before the confirmation loader explicitly
