@@ -7,7 +7,7 @@ the frozen 4x4 degradation grid; B3 additionally keeps its expanded target.
 """
 from __future__ import annotations
 
-import json, os, re, subprocess, sys
+import json, math, os, re, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,6 +19,11 @@ ARMS = {'B1': ('B1', 1), 'B2': ('B2', 35), 'B3': ('B3', 1), 'M1': ('M1', 36)}
 HRSC_SEEDS = (17, 29, 43)
 DOTA_SEEDS = (17,)
 SAMPLER_PROVENANCE = 'DefaultSampler(shuffle=True), distributed rank sharding'
+DOTA_ROOT = Path('/home/rspip/zy/data/dataset/dota/dota1.0/split_ss_dota10')
+DOTA_CLASSES = {'plane', 'baseball-diamond', 'bridge', 'ground-track-field',
+                'small-vehicle', 'large-vehicle', 'ship', 'tennis-court',
+                'basketball-court', 'storage-tank', 'soccer-ball-field',
+                'roundabout', 'harbor', 'swimming-pool', 'helicopter'}
 
 def invoke(argv, env):
     done = subprocess.run(argv, cwd=ROOT, env=env, text=True, stdout=subprocess.PIPE,
@@ -26,6 +31,48 @@ def invoke(argv, env):
     if done.returncode:
         raise RuntimeError('$ ' + ' '.join(map(str, argv)) + '\n' + done.stdout)
     return done.stdout
+
+def audit_dota_inputs():
+    """Assert the frozen train->val tile identity and annotation mapping."""
+    splits = {}
+    for split in ('train', 'val'):
+        image_dir, ann_dir = DOTA_ROOT / split / 'images', DOTA_ROOT / split / 'annfiles'
+        if not image_dir.is_dir() or not ann_dir.is_dir():
+            raise RuntimeError(f'missing DOTA {split} input directory')
+        images = [p for p in image_dir.iterdir() if p.is_file()]
+        annotations = [p for p in ann_dir.glob('*.txt') if p.is_file()]
+        image_by_id = {p.stem: p for p in images}
+        ann_by_id = {p.stem: p for p in annotations}
+        if len(image_by_id) != len(images) or len(ann_by_id) != len(annotations):
+            raise RuntimeError(f'DOTA {split} has duplicate tile identities')
+        missing_ann, missing_image = sorted(set(image_by_id) - set(ann_by_id)), sorted(set(ann_by_id) - set(image_by_id))
+        if missing_ann or missing_image:
+            raise RuntimeError(f'DOTA {split} image/annotation coverage mismatch: missing_ann={missing_ann[:3]} missing_image={missing_image[:3]}')
+        boxes = 0
+        for tile_id, ann in ann_by_id.items():
+            for line_no, line in enumerate(ann.read_text().splitlines(), 1):
+                fields = line.split()
+                if len(fields) != 10 or fields[8] not in DOTA_CLASSES:
+                    raise RuntimeError(f'invalid DOTA annotation {ann}:{line_no}')
+                try:
+                    coordinates = [float(v) for v in fields[:8]]
+                    difficulty = int(fields[9])
+                except ValueError as exc:
+                    raise RuntimeError(f'non-numeric DOTA annotation {ann}:{line_no}') from exc
+                if not all(math.isfinite(v) for v in coordinates) or difficulty not in (0, 1, 2):
+                    raise RuntimeError(f'invalid DOTA geometry/difficulty {ann}:{line_no}')
+                boxes += 1
+        splits[split] = {'tiles': len(image_by_id), 'boxes': boxes,
+                         'original_ids': {tile_id.split('__', 1)[0] for tile_id in image_by_id}}
+    crossing = sorted(splits['train']['original_ids'] & splits['val']['original_ids'])
+    if crossing:
+        raise RuntimeError(f'DOTA train/val original-image crossing: {crossing[:3]}')
+    audit = {'root': str(DOTA_ROOT), 'train_tiles': splits['train']['tiles'], 'val_tiles': splits['val']['tiles'],
+             'train_boxes': splits['train']['boxes'], 'val_boxes': splits['val']['boxes'],
+             'train_original_images': len(splits['train']['original_ids']),
+             'val_original_images': len(splits['val']['original_ids']), 'crossing_original_images': 0}
+    (OUT.parent / 'dota_input_audit.json').write_text(json.dumps(audit, indent=2) + '\n')
+    return audit
 
 def environment(dataset, key, seed, fixed_epoch):
     method, _ = ARMS[key]
@@ -83,6 +130,8 @@ def main():
                 if name in results and results[name].get('sampler_provenance') == SAMPLER_PROVENANCE:
                     continue
                 results.pop(name, None)
+                if dataset == 'dota':
+                    print('DOTA input audit:', json.dumps(audit_dota_inputs(), sort_keys=True), flush=True)
                 env, work = environment(dataset, key, seed, epoch)
                 if dataset == 'hrsc': env.update({'R005_HRSC_TRAIN_SPLIT':'trainval','R005_HRSC_EVAL_SPLIT':'test'})
                 config = ROOT / ('configs/r005_confirmation.py' if dataset == 'hrsc' else 'configs/r005_confirmation_dota.py')
