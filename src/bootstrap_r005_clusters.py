@@ -126,7 +126,8 @@ def main() -> None:
                    replicates=args.replicates, point=float(mean[0]),
                    ci95=[float(v) for v in np.quantile(mean, [.025, .975])],
                    seed_point_estimates=[float(v[0]) for v in per_seed],
-                   seed_sd=float(np.std(per_seed[:, 0], ddof=1)))
+                   seed_sd=(float(np.std(per_seed[:, 0], ddof=1)) if len(args.seeds) > 1 else None),
+                   cross_seed_stability_available=len(args.seeds) > 1)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2) + '\n')
     print(json.dumps(payload, indent=2))

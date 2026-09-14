@@ -51,7 +51,8 @@ def summarise(entry: dict) -> dict:
 
 def mean_sd(rows: list[dict]) -> dict:
     return {metric: {'mean': float(np.mean([row[metric] for row in rows])),
-                     'seed_sd': float(np.std([row[metric] for row in rows], ddof=1)),
+                     'seed_sd': (float(np.std([row[metric] for row in rows], ddof=1))
+                                 if len(rows) > 1 else None),
                      'per_seed': [row[metric] for row in rows]}
             for metric in ('AP50', 'AP75', 'AR100')}
 
@@ -60,22 +61,27 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--summary', type=Path, required=True)
     parser.add_argument('--dataset', choices=('hrsc', 'dota'), required=True)
+    parser.add_argument('--seeds', nargs='+', type=int, default=SEEDS,
+                        help='frozen confirmation seeds; DOTA may be narrowed by explicit user instruction')
     parser.add_argument('--bootstrap', type=Path,
                         help='optional paired M1-vs-strongest-baseline bootstrap JSON')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     source = json.loads(args.summary.read_text())
-    entries, report = {}, {'dataset': args.dataset, 'arms': {}, 'comparisons': {}}
+    seeds = tuple(args.seeds)
+    if not seeds:
+        raise ValueError('at least one confirmation seed is required')
+    entries, report = {}, {'dataset': args.dataset, 'seeds': list(seeds), 'arms': {}, 'comparisons': {}}
     for arm in ARMS:
         per_seed = []
-        for seed in SEEDS:
+        for seed in seeds:
             name = f'{args.dataset}/{arm}/seed{seed}'
             item = source.get(name)
             if item is None or item.get('sampler_provenance') != PROVENANCE:
                 raise ValueError(f'missing or unsharded confirmation entry: {name}')
             entry = summarise(item); entries[arm, seed] = entry; per_seed.append(entry)
         report['arms'][arm] = {
-            'per_seed': {str(seed): entry['aggregates'] for seed, entry in zip(SEEDS, per_seed)},
+            'per_seed': {str(seed): entry['aggregates'] for seed, entry in zip(seeds, per_seed)},
             'mean_and_seed_sd': {subset: mean_sd([entry['aggregates'][subset] for entry in per_seed])
                                  for subset in ('clear', 'degraded', 'blur', 'sampling', 'combination')}}
     # Strongest is defined only after all final 15-cell values exist, by the
@@ -88,16 +94,16 @@ def main() -> None:
         for subset in ('clear', 'degraded', 'blur', 'sampling', 'combination'):
             comparison[subset] = {}
             for metric in ('AP50', 'AP75', 'AR100'):
-                left = [entries['M1', seed]['aggregates'][subset][metric] for seed in SEEDS]
-                right = [entries[arm, seed]['aggregates'][subset][metric] for seed in SEEDS]
+                left = [entries['M1', seed]['aggregates'][subset][metric] for seed in seeds]
+                right = [entries[arm, seed]['aggregates'][subset][metric] for seed in seeds]
                 delta = np.asarray(left) - np.asarray(right)
                 comparison[subset][metric] = {'mean': float(delta.mean()),
-                                               'seed_sd': float(delta.std(ddof=1)),
+                                               'seed_sd': (float(delta.std(ddof=1)) if len(delta) > 1 else None),
                                                'per_seed': [float(x) for x in delta]}
         report['comparisons'][f'M1_minus_{arm}'] = comparison
     primary = report['comparisons'][f'M1_minus_{strongest}']
     gate = {'primary_ap75_ge_1pp': primary['degraded']['AP75']['mean'] >= .01,
-            'all_three_seed_ap75_positive': all(x > 0 for x in primary['degraded']['AP75']['per_seed']),
+            'all_requested_seed_ap75_positive': all(x > 0 for x in primary['degraded']['AP75']['per_seed']),
             'ar100_same_direction': primary['degraded']['AR100']['mean'] > 0,
             'clear_ap75_drop_no_more_than_0_5pp': primary['clear']['AP75']['mean'] >= -.005,
             'two_or_more_degradation_families_positive': sum(
@@ -108,6 +114,9 @@ def main() -> None:
             raise ValueError('bootstrap does not match final M1-vs-strongest comparison')
         report['bootstrap'] = bootstrap
         gate['paired_ci95_lower_gt_zero'] = bootstrap['ci95'][0] > 0
+    if args.dataset == 'dota' and len(seeds) < 3:
+        gate['cross_seed_stability_available'] = False
+        gate['final_continue_eligible'] = False
     report['dota_continue_gate_inputs'] = gate if args.dataset == 'dota' else None
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + '\n')
