@@ -208,3 +208,7 @@ r005 先在 HRSC2016 做有限开发；只有超过强退化增强、RFLA 分配
 **事实：**DOTA seed17/B2 的 `epoch_35.pth` 已完整落盘（213,499,387 bytes），旧三种子内存调度已在该安全边界退出，未启动 seed29/43。用同一 r005 的 `cqc-run run start --run runs/r005/RUN.json` 续接时，运行器拒绝历史输入 `dataset:DOTA-v1.0`；实际数据目录是 `dataset/dota-v1.0`。尝试创建精确的兼容软链接 `dataset/DOTA-v1.0 -> dataset/dota-v1.0` 被该数据文件系统以 `Input/output error` 拒绝。
 
 **未知与下一步：**这是 RUN 历史输入大小写与共享数据文件系统能力的工程阻塞，不是训练或科学结果失败；不手改 RUN 历史、不复制数据，也不启动取消的 DOTA 臂。需要恢复该精确兼容入口或由运行器允许已核实的历史输入路径映射后，才能以同一 r005 从已保存的 epoch35 只做 B2 评测、B3、M1。
+
+### 实际 DOTA 输入续接授权（2026-09-14，用户）
+
+用户明确要求“按照实际的 dota-v1.0 加快推进”。据此保留历史 RUN 原样，不再等待无法建立的大小写兼容入口；以项目原生命令从已保存的 B2 seed17 epoch35 续接同一 r005。实际训练/评测配置仍固定使用 `/home/rspip/zy/data/dataset/dota/dota1.0/split_ss_dota10`，且续接脚本的全量输入审计已验证其图块、标注和原图分区。DOTA 只排程 seed17 的 B2 评测、B3、M1；seed29/43 的八臂继续永久排除。
