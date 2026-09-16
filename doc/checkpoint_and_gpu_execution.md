@@ -17,3 +17,19 @@ python -m unittest src.test_checkpoint_retention src.test_training_resources -v
 实际已保存的 DOTA M1 seed17 epoch5、HRSC B2 seed17 epoch35、开发 B1 epoch36 均可在 CPU 完整读取，包含 264 项优化器状态、两个 scheduler、EMA、epoch/iter 与 message_hub。这只是恢复材料核验，不是新的科学评测。
 
 部署不会改变已加载的 Python 对象。核验时当前双卡 rank PID 为 686643、686644；旧调度 PID 为 72604；既有等待入口 PID 1085730 会在旧调度自然结束后重新加载磁盘入口。新 hook 由后续训练子进程读取，新 GPU 选择逻辑由后续重新加载的调度入口读取。本轮没有重启、迁移或热改这些进程。
+
+## 旧积存的恢复与清理
+
+本次只考虑 HRSC/B2 seed17 的 epoch1–34、HRSC/M1 seed17 的 epoch1–35、DOTA/B2 seed17 的 epoch1–34，共103个文件。三组末态、现有结果引用的文件、全部取消种子、当前训练组、旧 unsharded 产物及开发 best/latest 均保留。候选的物理 inode 均不同，合计 16,450,464,061 bytes。
+
+三份 `configs/r005_legacy_*.py` 原样来自保留 checkpoint 内的完整实际配置，包含真实优化器、scheduler、原生 EMA、数据、seed、分布式采样及历史保存策略。它们只用于按需恢复历史中间产物，不被当前训练入口引用。特别是两组 B2 原训练为35 epoch，不能用当前36 epoch预算替代其历史来源。`configs/r005_checkpoint_rebuild.json` 保存配置正文校验值、各组保留末态校验值、精确 epoch 清单和代码来源。
+
+恢复命令使用原生 torchrun，每组实际两卡，并调用同一公共 GPU 选择器。仅在确需重建时执行：
+
+```sh
+/home/rspip/miniconda3/envs/d3/bin/python src/rebuild_r005_intermediates.py --config configs/r005_checkpoint_rebuild.json
+```
+
+恢复先使用新的工作目录，保留所请求的全部历史中间输出，再只恢复原位置缺失的指定文件，不覆盖任何原有末态、best或结果。需要不同恢复工作目录时传 `--output-root runs/r005/另一个未使用目录`。随机计算重训不保证字节一致，不可把重建权重伪称为原统计使用的权重。加 `--dry-run` 只检查配置并打印原生命令，本轮没有运行上述恢复训练。
+
+`configs/r005.recovery.json` 使用既有 cqc-run 的恢复格式，旧描述保留于 Git 历史。代码没有消费它的旧自定义字段。只有 Home Git 已推送、输入存在、精确目标不属于保留依赖且清理器确认零进程引用后，才执行 `cqc-run run cleanup --project ... --recovery configs/r005.recovery.json --target ... --reason ...`；以清理器回写的逐文件记录为准。
