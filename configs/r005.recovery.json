@@ -1,14 +1,11 @@
 {
-  "run_id": "r005",
-  "result_summary": "lab/result.md#r005",
-  "source_commit": "b7f810cc5726f7dfbe284c556638d5fc76979c1f",
-  "config": "configs/r005_checkpoint_rebuild.json",
   "command": [
     "/home/rspip/miniconda3/envs/d3/bin/python",
     "src/rebuild_r005_intermediates.py",
     "--config",
     "configs/r005_checkpoint_rebuild.json"
   ],
+  "config": "configs/r005_checkpoint_rebuild.json",
   "inputs": [
     "dataset:HRSC2016",
     "dataset:dota/dota1.0/split_ss_dota10",
@@ -16,417 +13,729 @@
   ],
   "outputs": [
     {
+      "deleted_at": "2026-09-16T10:58:55.037548Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_1.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_1.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.059359Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_2.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_2.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.078175Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_3.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_3.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.093004Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_4.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_4.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.110700Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_5.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_5.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.128158Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_6.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_6.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.142017Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_7.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_7.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.156861Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_8.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_8.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.175405Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_9.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_9.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.190828Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_10.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_10.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.208563Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_11.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_11.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.228608Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_12.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_12.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.245429Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_13.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_13.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.262638Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_14.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_14.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.280359Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_15.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_15.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.298731Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_16.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_16.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.316303Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_17.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_17.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.333812Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_18.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_18.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.348785Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_19.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_19.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.365241Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_20.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_20.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.380736Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_21.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_21.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.398757Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_22.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_22.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.416918Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_23.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_23.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.434798Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_24.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_24.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.453045Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_25.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_25.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.471808Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_26.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_26.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.489423Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_27.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_27.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.510613Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_28.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_28.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.530259Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_29.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_29.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.547211Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_30.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_30.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.564514Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_31.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_31.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.581830Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_32.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_32.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.601088Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_33.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_33.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.620292Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/B2_seed17/epoch_34.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_34.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.635449Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_1.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_1.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.655587Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_2.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_2.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.674972Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_3.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_3.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.697982Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_4.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_4.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.719672Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_5.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_5.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.740533Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_6.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_6.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.757562Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_7.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_7.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.777076Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_8.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_8.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.796833Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_9.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_9.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.816721Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_10.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_10.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.839131Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_11.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_11.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.857125Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_12.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_12.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.877099Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_13.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_13.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.896323Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_14.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_14.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.914477Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_15.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_15.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.929406Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_16.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_16.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.944281Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_17.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_17.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.959019Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_18.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_18.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.975483Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_19.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_19.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:55.992714Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_20.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_20.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.006732Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_21.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_21.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.027092Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_22.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_22.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.042645Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_23.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_23.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.059640Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_24.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_24.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.075302Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_25.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_25.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.097087Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_26.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_26.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.119636Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_27.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_27.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.139156Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_28.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_28.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.159216Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_29.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_29.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.176752Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_30.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_30.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.197843Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_31.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_31.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.215196Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_32.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_32.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.232545Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_33.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_33.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.250645Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_34.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_34.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.270387Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/hrsc/M1_seed17/epoch_35.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_35.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.291383Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_1.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_1.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.312548Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_2.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_2.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.333321Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_3.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_3.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.353614Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_4.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_4.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.374368Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_5.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_5.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.393163Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_6.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_6.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.414896Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_7.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_7.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.436613Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_8.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_8.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.459386Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_9.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_9.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.484547Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_10.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_10.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.504227Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_11.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_11.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.523003Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_12.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_12.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.543822Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_13.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_13.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.567423Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_14.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_14.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.588756Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_15.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_15.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.613557Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_16.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_16.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.634676Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_17.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_17.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.659414Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_18.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_18.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.682306Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_19.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_19.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.704213Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_20.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_20.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.731272Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_21.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_21.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.754352Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_22.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_22.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.780429Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_23.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_23.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.803005Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_24.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_24.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.836747Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_25.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_25.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.864383Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_26.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_26.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.883952Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_27.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_27.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.906774Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_28.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_28.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.931112Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_29.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_29.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.952571Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_30.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_30.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:56.979973Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_31.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_31.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:57.006020Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_32.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_32.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:57.031642Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_33.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_33.pth",
       "rebuildable": true
     },
     {
+      "deleted_at": "2026-09-16T10:58:57.057364Z",
+      "deleted_from": "/home/rspip/zy/study/P12/runs/r005/confirmation/dota/B2_seed17/epoch_34.pth",
+      "deletion_reason": "Remove 103 unused seed17 intermediate epochs; exact legacy configs and complete retained states preserved in Home Git; protect existing results and all other groups",
       "path": "runs/r005/confirmation/dota/B2_seed17/epoch_34.pth",
       "rebuildable": true
     }
   ],
-  "project_root": "/home/rspip/zy/study/P12"
+  "project_root": "/home/rspip/zy/study/P12",
+  "result_summary": "lab/result.md#r005",
+  "run_id": "r005",
+  "source_commit": "b7f810cc5726f7dfbe284c556638d5fc76979c1f"
 }
