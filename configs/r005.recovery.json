@@ -1,47 +1,432 @@
 {
-  "task": "r005",
-  "project": "P12",
-  "source": "src/run_r005_confirmation.py",
-  "config_entries": [
-    "configs/r005_confirmation.py",
-    "configs/r005_confirmation_dota.py"
-  ],
+  "run_id": "r005",
+  "result_summary": "lab/result.md#r005",
+  "source_commit": "b7f810cc5726f7dfbe284c556638d5fc76979c1f",
+  "config": "configs/r005_checkpoint_rebuild.json",
   "command": [
     "/home/rspip/miniconda3/envs/d3/bin/python",
-    "src/run_r005_confirmation.py"
+    "src/rebuild_r005_intermediates.py",
+    "--config",
+    "configs/r005_checkpoint_rebuild.json"
   ],
-  "inputs": {
-    "hrsc": "/home/rspip/zy/data/dataset/HRSC2016",
-    "dota": "/home/rspip/zy/data/dataset/dota/dota1.0/split_ss_dota10"
-  },
-  "actual_dota_input": "dota-v1.0",
-  "environment": {
-    "TORCH_HOME": "/home/rspip/zy/study/P12/runs/r005/.cache/torch"
-  },
+  "inputs": [
+    "dataset:HRSC2016",
+    "dataset:dota/dota1.0/split_ss_dota10",
+    "public:https://download.openmmlab.com/mmdetection/v3.0/rtmdet/cspnext_rsb_pretrain/cspnext-s_imagenet_600e.pth"
+  ],
   "outputs": [
-    "runs/r005/artifacts/r005_confirmation.json",
-    "runs/r005/confirmation"
-  ],
-  "scope": {
-    "hrsc_seeds": [17],
-    "dota_seeds": [17],
-    "dota_cancelled_before_start": {
-      "seeds": [29, 43],
-      "arms": ["B1", "B2", "B3", "M1"],
-      "authorized_on": "2026-09-14"
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_1.pth",
+      "rebuildable": true
     },
-    "all_datasets_cancelled_before_start": {
-      "seeds": [29, 43],
-      "arms": ["B1", "B2", "B3", "M1"],
-      "authorized_on": "2026-09-16",
-      "retain_existing_artifacts": true
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_2.pth",
+      "rebuildable": true
     },
-    "uniform_training_budget": {
-      "epochs": 36,
-      "authorized_on": "2026-09-15",
-      "resume_from_existing_checkpoints": true,
-      "gpu_selection": "two GPUs with >=8192 MiB free, then lowest utilization"
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_3.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_4.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_5.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_6.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_7.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_8.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_9.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_10.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_11.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_12.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_13.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_14.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_15.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_16.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_17.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_18.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_19.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_20.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_21.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_22.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_23.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_24.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_25.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_26.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_27.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_28.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_29.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_30.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_31.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_32.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_33.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/B2_seed17/epoch_34.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_1.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_2.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_3.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_4.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_5.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_6.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_7.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_8.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_9.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_10.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_11.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_12.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_13.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_14.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_15.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_16.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_17.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_18.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_19.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_20.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_21.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_22.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_23.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_24.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_25.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_26.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_27.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_28.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_29.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_30.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_31.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_32.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_33.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_34.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/hrsc/M1_seed17/epoch_35.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_1.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_2.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_3.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_4.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_5.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_6.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_7.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_8.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_9.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_10.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_11.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_12.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_13.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_14.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_15.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_16.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_17.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_18.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_19.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_20.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_21.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_22.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_23.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_24.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_25.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_26.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_27.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_28.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_29.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_30.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_31.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_32.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_33.pth",
+      "rebuildable": true
+    },
+    {
+      "path": "runs/r005/confirmation/dota/B2_seed17/epoch_34.pth",
+      "rebuildable": true
     }
-  },
-  "rebuild": "The historical RUN records a non-existent dataset:DOTA-v1.0 spelling and cannot pass cqc-run recovery validation. Under the user's 2026-09-14 authorization, continue the same r005 with TORCH_HOME=/home/rspip/zy/study/P12/runs/r005/.cache/torch /home/rspip/miniconda3/envs/d3/bin/python src/run_r005_confirmation.py against the verified actual dota-v1.0 input. Under the user's 2026-09-15 authorization, every arm resumes its existing checkpoint to epoch 36; the runner audits DOTA inputs and dynamically selects a balanced two-GPU DDP pair before each new training arm. Under the user's 2026-09-16 authorization, the runner schedules only seed 17 for both datasets; pre-existing seed29/43 artifacts remain preserved but are never resumed or evaluated as cross-seed evidence."
+  ],
+  "project_root": "/home/rspip/zy/study/P12"
 }
