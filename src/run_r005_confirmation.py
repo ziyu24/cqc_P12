@@ -1,9 +1,9 @@
 """Run the frozen r005 post-development confirmation matrix.
 
-HRSC: B1/B2/B3/M1 on trainval->test, seeds 17/29/43, with the same frozen
-36-epoch budget. DOTA: the same arms on train->val for seed 17 only; the user
-cancelled the not-yet-started seed-29/43 DOTA arms.  All evaluation cells use
-the frozen 4x4 degradation grid; B3 additionally keeps its expanded target.
+HRSC and DOTA: B1/B2/B3/M1 on their frozen split for seed 17 only, with the
+same frozen 36-epoch budget.  The user cancelled every not-yet-started
+seed-29/43 arm for both datasets.  All evaluation cells use the frozen 4x4
+degradation grid; B3 additionally keeps its expanded target.
 """
 from __future__ import annotations
 
@@ -17,8 +17,11 @@ OUT = ROOT / 'runs/r005/artifacts/r005_confirmation.json'
 GRID = [(s, f) for s in (0., .8, 1.6, 3.2) for f in (1, 2, 4, 8)]
 AP = re.compile(r'r005/(AP50|AP75|AR100):\s*([0-9.]+)')
 ARMS = {'B1': ('B1', 36), 'B2': ('B2', 36), 'B3': ('B3', 36), 'M1': ('M1', 36)}
-HRSC_SEEDS = (17, 29, 43)
-DOTA_SEEDS = (17,)
+# This is deliberately shared by both datasets: it is the user-authorized
+# post-cancellation scope, not an inference from existing artifact folders.
+ACTIVE_SEEDS = (17,)
+HRSC_SEEDS = ACTIVE_SEEDS
+DOTA_SEEDS = ACTIVE_SEEDS
 SAMPLER_PROVENANCE = 'DefaultSampler(shuffle=True), distributed rank sharding'
 DOTA_ROOT = Path('/home/rspip/zy/data/dataset/dota/dota1.0/split_ss_dota10')
 DOTA_CLASSES = {'plane', 'baseball-diamond', 'bridge', 'ground-track-field',
