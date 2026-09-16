@@ -1,6 +1,6 @@
 # 实验结果
 
-本文件是已结束 `rNNN` 的唯一历史记录。每个结果使用以下最小结构；大型产物删除前必须填完并提交、推送。
+本文件保存实验结果和已核验的产物保留、恢复事实。进行中任务的工程记录须明确标注科学任务未完成，不代替科学验收。每个结果使用以下最小结构；大型产物删除前必须填完并提交、推送。
 
 <!--
 ## rNNN
@@ -92,3 +92,4 @@
 - 适用范围：只适用于上述三个 seed17 历史训练片段。历史 B2 两组实际为 35 epoch，M1 为 36 epoch，全部每卡 batch1、双卡、单 seed17；重建使用保存的原实际配置，不能用当前补训至36 epoch的配置冒充历史。重训仅能恢复同协议中间模型，不保证随机训练 checkpoint 字节相同，也不能替代已保留末态及其既有结果证据。
 - 大型产物：精确候选由 configs/r005.recovery.json 的 outputs 列出，只包括 runs/r005/confirmation/hrsc/B2_seed17/、runs/r005/confirmation/dota/B2_seed17/ 各自 epoch1–34，以及 runs/r005/confirmation/hrsc/M1_seed17/ 的 epoch1–35；对应文件名集合为 epoch_1.pth、epoch_2.pth、epoch_3.pth、epoch_4.pth、epoch_5.pth、epoch_6.pth、epoch_7.pth、epoch_8.pth、epoch_9.pth、epoch_10.pth、epoch_11.pth、epoch_12.pth、epoch_13.pth、epoch_14.pth、epoch_15.pth、epoch_16.pth、epoch_17.pth、epoch_18.pth、epoch_19.pth、epoch_20.pth、epoch_21.pth、epoch_22.pth、epoch_23.pth、epoch_24.pth、epoch_25.pth、epoch_26.pth、epoch_27.pth、epoch_28.pth、epoch_29.pth、epoch_30.pth、epoch_31.pth、epoch_32.pth、epoch_33.pth、epoch_34.pth、epoch_35.pth。其它文件不在本次清理范围。是否已删除、实际位置和时间以同一恢复配置逐项记录为准。
 - 重建方式：在46的既有d3环境、项目根目录运行 /home/rspip/miniconda3/envs/d3/bin/python src/rebuild_r005_intermediates.py --config configs/r005_checkpoint_rebuild.json；输入是 HRSC2016、实际 dota/dota1.0/split_ss_dota10、原公开 CSPNeXt-S ImageNet 初始化和上述 ai4rs/科学组件。入口先在全新的 runs/r005/rebuilt_intermediates/ 中按原预算逐组执行原生双卡训练，再只恢复清单中缺失的中间文件，拒绝覆盖任何已有 checkpoint。--dry-run 只校验配置并列出命令，本次只做该检查，没有重建训练。
+- 清理执行（2026-09-16，B）：既有 cqc-run 对103个精确目标批量 dry-run 全部 VERIFIED 后执行一次批量清理，10:59:01 UTC 回报 DELETED；释放 16,450,464,061 bytes，逐文件实际路径、时间和原因由 configs/r005.recovery.json 保存，远端记录提交 163ae51e100c178c677ffc249f7b30798c4f9b4f。10:59:32 UTC 全部 PTH 前后清单复核：291→188 个，剩余 27,114,106,900 bytes；所有非目标文件的 inode、大小和修改时间均未变化。旧调度、双卡 rank 和等待入口的进程启动 ticks 也保持不变；当前 DOTA/M1 已加载的旧保存策略未被热改，其6个 checkpoint 继续保留。

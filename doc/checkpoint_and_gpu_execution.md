@@ -33,3 +33,5 @@ python -m unittest src.test_checkpoint_retention src.test_training_resources -v
 恢复先使用新的工作目录，保留所请求的全部历史中间输出，再只恢复原位置缺失的指定文件，不覆盖任何原有末态、best或结果。需要不同恢复工作目录时传 `--output-root runs/r005/另一个未使用目录`。随机计算重训不保证字节一致，不可把重建权重伪称为原统计使用的权重。加 `--dry-run` 只检查配置并打印原生命令，本轮没有运行上述恢复训练。
 
 `configs/r005.recovery.json` 使用既有 cqc-run 的恢复格式，旧描述保留于 Git 历史。代码没有消费它的旧自定义字段。只有 Home Git 已推送、输入存在、精确目标不属于保留依赖且清理器确认零进程引用后，才执行 `cqc-run run cleanup --project ... --recovery configs/r005.recovery.json --target ... --reason ...`；以清理器回写的逐文件记录为准。
+
+2026-09-16 10:59 UTC，使用已发布的重复 `--target` 接口，先对103个精确目标全部 dry-run，再一次批量清理。删除记录提交为 `163ae51e100c178c677ffc249f7b30798c4f9b4f`，释放16,450,464,061 bytes。全项目 r005 的 PTH 清单由291个变为188个；所有非目标文件的 inode、大小、mtime 均保持不变，既有进程启动 ticks 不变。剩余文件包含受保留约束的取消种子产物、正在运行组及公共初始化缓存，不能把根目录总数解释成单臂保留上限。
