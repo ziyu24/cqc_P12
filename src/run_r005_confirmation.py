@@ -11,6 +11,11 @@ import json, math, os, re, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+if __package__:
+    from .training_resources import training_gpu_environment
+else:
+    from training_resources import training_gpu_environment
+
 ROOT = Path(__file__).resolve().parents[1]
 MMROTATE = Path('/home/rspip/zy/study/third_party/ai4rs')
 OUT = ROOT / 'runs/r005/artifacts/r005_confirmation.json'
@@ -28,7 +33,6 @@ DOTA_CLASSES = {'plane', 'baseball-diamond', 'bridge', 'ground-track-field',
                 'small-vehicle', 'large-vehicle', 'ship', 'tennis-court',
                 'basketball-court', 'storage-tank', 'soccer-ball-field',
                 'roundabout', 'harbor', 'swimming-pool', 'helicopter'}
-GPU_FREE_FLOOR_MIB = 8192
 
 def invoke(argv, env):
     done = subprocess.run(argv, cwd=ROOT, env=env, text=True, stdout=subprocess.PIPE,
@@ -88,40 +92,16 @@ def audit_dota_inputs():
 def work_dir(dataset, key, seed):
     return ROOT / 'runs/r005/confirmation' / dataset / f'{key}_seed{seed}'
 
-def balanced_gpus(count=2):
-    """Pick sufficiently free, least-busy physical GPUs immediately before launch."""
-    probe = subprocess.run(
-        ['nvidia-smi', '--query-gpu=index,memory.free,utilization.gpu',
-         '--format=csv,noheader,nounits'], text=True, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE, check=False)
-    if probe.returncode:
-        raise RuntimeError(f'nvidia-smi GPU query failed: {probe.stderr.strip()}')
-    choices = []
-    for line in probe.stdout.splitlines():
-        try:
-            index, free, utilization = (int(x.strip()) for x in line.split(','))
-        except ValueError as exc:
-            raise RuntimeError(f'unexpected nvidia-smi GPU row: {line!r}') from exc
-        if free >= GPU_FREE_FLOOR_MIB:
-            choices.append((utilization, -free, index))
-    if len(choices) < count:
-        raise RuntimeError(
-            f'need {count} GPUs with at least {GPU_FREE_FLOOR_MIB} MiB free; '
-            f'available rows: {probe.stdout.strip()}')
-    return ','.join(str(index) for _, _, index in sorted(choices)[:count])
-
 def environment(dataset, key, seed, fixed_epoch):
     method, _ = ARMS[key]
     work = work_dir(dataset, key, seed)
-    physical_gpus = balanced_gpus()
     env = os.environ.copy()
     env.update({'PYTHONPATH': str(ROOT), 'R005_DATASET': dataset, 'R005_ARM': key,
                 'R005_METHOD_ARM': method, 'R005_SEED': str(seed),
                 'R005_WORK_DIR': str(work), 'R005_PER_GPU_BATCH': '1',
                 'R005_COVARIANCE_SCALE': '.5', 'R005_AMBIGUITY_THRESHOLD': '.2',
-                'R005_FIXED_EPOCH': str(fixed_epoch),
-                'CUDA_DEVICE_ORDER': 'PCI_BUS_ID', 'CUDA_VISIBLE_DEVICES': physical_gpus,
-                'R005_GPU_PHYSICAL': physical_gpus})
+                'R005_FIXED_EPOCH': str(fixed_epoch)})
+    env.update(training_gpu_environment())
     return env, work
 
 def checkpoint(work, fixed_epoch=None):

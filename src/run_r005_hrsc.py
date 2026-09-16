@@ -13,6 +13,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+if __package__:
+    from .training_resources import training_gpu_environment
+else:
+    from training_resources import training_gpu_environment
+
 ROOT = Path(__file__).resolve().parents[1]
 MMROTATE = Path('/home/rspip/zy/study/third_party/ai4rs')
 CONFIG = ROOT / 'configs/r005_hrsc.py'
@@ -29,6 +34,7 @@ def env_for(arm: str, covariance: float = 1., threshold: float = .0) -> dict[str
                 'R005_AMBIGUITY_THRESHOLD': str(threshold),
                 # DDP uses two cards with unchanged global batch 2.
                 'R005_PER_GPU_BATCH': '1'})
+    env.update(training_gpu_environment())
     return env
 
 

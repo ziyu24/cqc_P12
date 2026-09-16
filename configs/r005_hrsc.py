@@ -19,7 +19,7 @@ covariance_scale = float(os.environ.get('R005_COVARIANCE_SCALE', '1.0'))
 ambiguity_threshold = float(os.environ.get('R005_AMBIGUITY_THRESHOLD', '0.1'))
 per_gpu_batch = int(os.environ.get('R005_PER_GPU_BATCH', '2'))
 dataset_root = '/home/rspip/zy/data/dataset/HRSC2016'
-custom_imports = dict(imports=['src.r005_components'], allow_failed_imports=False)
+custom_imports = dict(imports=['src.r005_components', 'src.checkpoint_retention'], allow_failed_imports=False)
 
 # 25% clear, otherwise deterministic per-original-image blur/downsample draw.
 degradation = dict(type='SharedGaussianDownsample', prob=0.0 if method_arm == 'B0' else .75,
@@ -79,4 +79,6 @@ if method_arm not in ('B1', 'B3', 'B0'):
 
 work_dir = f'{run_root}/{arm}'
 randomness = dict(seed=seed, deterministic=False)
-default_hooks = dict(checkpoint=dict(interval=1, max_keep_ckpts=1, save_best='r005/AP75', rule='greater'))
+default_hooks = dict(checkpoint=dict(type='AtomicCheckpointHook', interval=1,
+    max_keep_ckpts=1, save_best='r005/AP75', rule='greater',
+    dependency_files=['runs/r005/artifacts/hrsc_development.json']))

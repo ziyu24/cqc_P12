@@ -47,7 +47,7 @@ def build_confirmation(dataset: str) -> dict:
                      dict(type='FixedGaussianDownsample', sigma=eval_sigma, factor=eval_factor),
                      *([dict(type='BlurBoxExpansion', support_scale=1.0)] if method_arm == 'B3' and eval_target == 'expanded' else []),
                      dict(type='mmdet.Pad', size=(image_size,image_size), pad_val=dict(img=(114,114,114))), pack]
-    values = dict(work_dir=work_dir, custom_imports=dict(imports=['src.r005_components'], allow_failed_imports=False),
+    values = dict(work_dir=work_dir, custom_imports=dict(imports=['src.r005_components', 'src.checkpoint_retention'], allow_failed_imports=False),
         train_dataloader=dict(_delete_=True, batch_size=per_gpu_batch, num_workers=4, persistent_workers=True, pin_memory=True,
             sampler=dict(type='DefaultSampler', shuffle=True),
             # Keep the development protocol's three deterministic visits per
@@ -76,6 +76,7 @@ def build_confirmation(dataset: str) -> dict:
     # endpoint and must not also choose a best checkpoint.
     values['train_cfg'] = dict(max_epochs=fixed_epoch, type='EpochBasedTrainLoop', val_interval=999)
     values['default_hooks'] = dict(checkpoint=dict(
-        _delete_=True, type='CheckpointHook', interval=1,
-        max_keep_ckpts=1, save_last=True))
+        _delete_=True, type='AtomicCheckpointHook', interval=1,
+        max_keep_ckpts=1, save_last=True,
+        dependency_files=['runs/r005/artifacts/r005_confirmation.json']))
     return values
