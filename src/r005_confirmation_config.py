@@ -77,5 +77,5 @@ def build_confirmation(dataset: str) -> dict:
     values['train_cfg'] = dict(max_epochs=fixed_epoch, type='EpochBasedTrainLoop', val_interval=999)
     values['default_hooks'] = dict(checkpoint=dict(
         _delete_=True, type='CheckpointHook', interval=1,
-        max_keep_ckpts=fixed_epoch, save_last=True))
+        max_keep_ckpts=1, save_last=True))
     return values
