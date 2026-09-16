@@ -1,7 +1,7 @@
 """Run the frozen r005 post-development confirmation matrix.
 
-HRSC: B1/B2/B3/M1 on trainval->test, seeds 17/29/43, fixed development
-epochs. DOTA: the same arms on train->val for seed 17 only; the user
+HRSC: B1/B2/B3/M1 on trainval->test, seeds 17/29/43, with the same frozen
+36-epoch budget. DOTA: the same arms on train->val for seed 17 only; the user
 cancelled the not-yet-started seed-29/43 DOTA arms.  All evaluation cells use
 the frozen 4x4 degradation grid; B3 additionally keeps its expanded target.
 """
@@ -16,7 +16,7 @@ MMROTATE = Path('/home/rspip/zy/study/third_party/ai4rs')
 OUT = ROOT / 'runs/r005/artifacts/r005_confirmation.json'
 GRID = [(s, f) for s in (0., .8, 1.6, 3.2) for f in (1, 2, 4, 8)]
 AP = re.compile(r'r005/(AP50|AP75|AR100):\s*([0-9.]+)')
-ARMS = {'B1': ('B1', 1), 'B2': ('B2', 35), 'B3': ('B3', 1), 'M1': ('M1', 36)}
+ARMS = {'B1': ('B1', 36), 'B2': ('B2', 36), 'B3': ('B3', 36), 'M1': ('M1', 36)}
 HRSC_SEEDS = (17, 29, 43)
 DOTA_SEEDS = (17,)
 SAMPLER_PROVENANCE = 'DefaultSampler(shuffle=True), distributed rank sharding'
@@ -25,6 +25,7 @@ DOTA_CLASSES = {'plane', 'baseball-diamond', 'bridge', 'ground-track-field',
                 'small-vehicle', 'large-vehicle', 'ship', 'tennis-court',
                 'basketball-court', 'storage-tank', 'soccer-ball-field',
                 'roundabout', 'harbor', 'swimming-pool', 'helicopter'}
+GPU_FREE_FLOOR_MIB = 8192
 
 def invoke(argv, env):
     done = subprocess.run(argv, cwd=ROOT, env=env, text=True, stdout=subprocess.PIPE,
@@ -81,15 +82,43 @@ def audit_dota_inputs():
     (OUT.parent / 'dota_input_audit.json').write_text(json.dumps(audit, indent=2) + '\n')
     return audit
 
+def work_dir(dataset, key, seed):
+    return ROOT / 'runs/r005/confirmation' / dataset / f'{key}_seed{seed}'
+
+def balanced_gpus(count=2):
+    """Pick sufficiently free, least-busy physical GPUs immediately before launch."""
+    probe = subprocess.run(
+        ['nvidia-smi', '--query-gpu=index,memory.free,utilization.gpu',
+         '--format=csv,noheader,nounits'], text=True, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, check=False)
+    if probe.returncode:
+        raise RuntimeError(f'nvidia-smi GPU query failed: {probe.stderr.strip()}')
+    choices = []
+    for line in probe.stdout.splitlines():
+        try:
+            index, free, utilization = (int(x.strip()) for x in line.split(','))
+        except ValueError as exc:
+            raise RuntimeError(f'unexpected nvidia-smi GPU row: {line!r}') from exc
+        if free >= GPU_FREE_FLOOR_MIB:
+            choices.append((utilization, -free, index))
+    if len(choices) < count:
+        raise RuntimeError(
+            f'need {count} GPUs with at least {GPU_FREE_FLOOR_MIB} MiB free; '
+            f'available rows: {probe.stdout.strip()}')
+    return ','.join(str(index) for _, _, index in sorted(choices)[:count])
+
 def environment(dataset, key, seed, fixed_epoch):
     method, _ = ARMS[key]
-    work = ROOT / 'runs/r005/confirmation' / dataset / f'{key}_seed{seed}'
+    work = work_dir(dataset, key, seed)
+    physical_gpus = balanced_gpus()
     env = os.environ.copy()
     env.update({'PYTHONPATH': str(ROOT), 'R005_DATASET': dataset, 'R005_ARM': key,
                 'R005_METHOD_ARM': method, 'R005_SEED': str(seed),
                 'R005_WORK_DIR': str(work), 'R005_PER_GPU_BATCH': '1',
                 'R005_COVARIANCE_SCALE': '.5', 'R005_AMBIGUITY_THRESHOLD': '.2',
-                'R005_FIXED_EPOCH': str(fixed_epoch)})
+                'R005_FIXED_EPOCH': str(fixed_epoch),
+                'CUDA_DEVICE_ORDER': 'PCI_BUS_ID', 'CUDA_VISIBLE_DEVICES': physical_gpus,
+                'R005_GPU_PHYSICAL': physical_gpus})
     return env, work
 
 def checkpoint(work, fixed_epoch=None):
@@ -134,7 +163,10 @@ def main():
                 # restored DefaultSampler were unsharded under DDP, doubling
                 # optimizer steps per epoch.  They remain on disk for audit
                 # but cannot satisfy this frozen confirmation protocol.
-                if name in results and results[name].get('sampler_provenance') == SAMPLER_PROVENANCE:
+                work = work_dir(dataset, key, seed)
+                target = str((work / f'epoch_{epoch}.pth').relative_to(ROOT))
+                if (name in results and results[name].get('sampler_provenance') == SAMPLER_PROVENANCE
+                        and results[name].get('checkpoint') == target):
                     continue
                 results.pop(name, None)
                 if dataset == 'dota':
@@ -147,11 +179,16 @@ def main():
                 # from that exact checkpoint without selecting on test/val.
                 frozen = work / f'epoch_{epoch}.pth'
                 if not frozen.is_file():
-                    invoke(['torchrun','--standalone','--nproc_per_node=2',str(MMROTATE/'tools/train.py'),str(config),'--launcher','pytorch'], env)
+                    train = ['torchrun', '--standalone', '--nproc_per_node=2',
+                             str(MMROTATE/'tools/train.py'), str(config), '--launcher', 'pytorch']
+                    if any(work.glob('epoch_*.pth')):
+                        train.append('--resume')
+                    invoke(train, env)
                 ckpt = checkpoint(work, epoch)
                 grid, expanded = evaluate(env, ckpt, key == 'B3')
                 results[name] = {'dataset':dataset,'arm':key,'seed':seed,'checkpoint':str(ckpt.relative_to(ROOT)),
-                                 'sampler_provenance': SAMPLER_PROVENANCE, 'grid':grid,
+                                 'sampler_provenance': SAMPLER_PROVENANCE,
+                                 'gpu_physical': env['R005_GPU_PHYSICAL'], 'grid':grid,
                                  **({'expanded_target_grid':expanded} if expanded else {})}
                 OUT.parent.mkdir(parents=True, exist_ok=True)
                 OUT.write_text(json.dumps(results, indent=2)+'\n')

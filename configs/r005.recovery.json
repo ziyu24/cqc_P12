@@ -29,7 +29,13 @@
       "seeds": [29, 43],
       "arms": ["B1", "B2", "B3", "M1"],
       "authorized_on": "2026-09-14"
+    },
+    "uniform_training_budget": {
+      "epochs": 36,
+      "authorized_on": "2026-09-15",
+      "resume_from_existing_checkpoints": true,
+      "gpu_selection": "two GPUs with >=8192 MiB free, then lowest utilization"
     }
   },
-  "rebuild": "The historical RUN records a non-existent dataset:DOTA-v1.0 spelling and cannot pass cqc-run recovery validation. Under the user's 2026-09-14 authorization, continue the same r005 with TORCH_HOME=/home/rspip/zy/study/P12/runs/r005/.cache/torch /home/rspip/miniconda3/envs/d3/bin/python src/run_r005_confirmation.py against the verified actual dota-v1.0 input. Existing exact checkpoints and completed grids are reused; the committed runner audits DOTA inputs and schedules only seed 17."
+  "rebuild": "The historical RUN records a non-existent dataset:DOTA-v1.0 spelling and cannot pass cqc-run recovery validation. Under the user's 2026-09-14 authorization, continue the same r005 with TORCH_HOME=/home/rspip/zy/study/P12/runs/r005/.cache/torch /home/rspip/miniconda3/envs/d3/bin/python src/run_r005_confirmation.py against the verified actual dota-v1.0 input. Under the user's 2026-09-15 authorization, every arm resumes its existing checkpoint to epoch 36; the runner audits DOTA inputs, schedules only seed 17 for DOTA, and dynamically selects a balanced two-GPU DDP pair before each new training arm."
 }
