@@ -272,3 +272,7 @@ r005 先在 HRSC2016 做有限开发；只有超过强退化增强、RFLA 分配
 ### r005 B3 恢复（2026-09-27，用户）
 
 **授权与执行：**用户明确要求在 GPU 0、1 上继续。仅重启 DOTA-v1.0 seed17/B3；入口自动从完整的 `epoch_5.pth` 恢复（日志确认 resumed epoch 5、iter 73005），当前进入第 6 轮。CUDA 导入前绑定两张物理卡，`WORLD_SIZE=2`；`cqc-run gpu-check` 对 `torchrun` 返回 `MATCH`，两个 rank 实际分别占用 GPU 0、1。未启动其他臂或 seed29/43。
+
+### r005 B3 暂停（2026-09-27，用户）
+
+**授权与执行：**用户要求“先暂停”。已对仅含 DOTA-v1.0 seed17/B3 的训练进程组发送 `TERM`，并核验 runner、`torchrun` 及两个训练 rank 均已退出。最近完整恢复点仍为 `epoch_7.pth`；未删除、回滚或改写任何 checkpoint、日志或其他产物，未启动其他臂或 seed29/43。后续等待用户明确恢复命令。
